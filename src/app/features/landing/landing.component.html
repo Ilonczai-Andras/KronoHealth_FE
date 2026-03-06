@@ -1,0 +1,122 @@
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-glow hero-glow--cyan"></div>
+  <div class="hero-glow hero-glow--purple"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge badge badge-cyan">
+      Beta program – Korlátozott helyek
+    </div>
+
+    <h1 class="hero-title">
+      A <span class="gradient-text">longevity platformod</span> –<br />
+      személyre szabva, adatalapú
+    </h1>
+
+    <p class="hero-subtitle">
+      Vérkép-elemzés, okosóra-adatok és AI-alapú ajánlások – egyetlen,
+      letisztult dashboardon. Tudd meg, mit üzen a tested, mielőtt a problémák kibontakoznának.
+    </p>
+
+    <div class="hero-actions">
+      <a routerLink="/register" class="btn btn-primary hero-cta">
+        Ingyenes kezdés
+        <app-icon name="arrow-right" [size]="16"></app-icon>
+      </a>
+      <a routerLink="/login" class="btn btn-ghost">
+        Már van fiókom
+      </a>
+    </div>
+
+    <p class="hero-note">Nincs kártyaszám szükséges. Ingyenesen kísérhető az első 30 napig.</p>
+  </div>
+
+  <!-- Mock dashboard preview -->
+  <div class="hero-preview">
+    <div class="preview-card glass-card">
+      <div class="preview-header">
+        <span class="preview-title">Longevity Score</span>
+        <span class="badge badge-green">+4 pont</span>
+      </div>
+      <div class="preview-score">
+        <span class="score-number gradient-text">82</span>
+        <span class="score-max">/100</span>
+      </div>
+      <div class="preview-bars">
+        <div class="bar-row">
+          <span class="bar-label">Alvás</span>
+          <div class="bar-track"><div class="bar-fill" style="width: 78%; background: var(--gradient-success)"></div></div>
+          <span class="bar-val">78%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">HRV</span>
+          <div class="bar-track"><div class="bar-fill" style="width: 65%; background: var(--gradient-primary)"></div></div>
+          <span class="bar-val">65ms</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">Aktivitás</span>
+          <div class="bar-track"><div class="bar-fill" style="width: 90%; background: var(--gradient-secondary)"></div></div>
+          <span class="bar-val">9k lépés</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="features">
+  <div class="section-header">
+    <h2 class="section-title">Minden, amire szükséged van</h2>
+    <p class="section-subtitle">
+      Egy platform, ahol az összes egészségügyi adatod összeáll egy koherens képpé.
+    </p>
+  </div>
+
+  <div class="features-grid">
+    @for (feat of features; track feat.title) {
+      <div class="feature-card glass-card">
+        <div class="feature-icon-wrap">
+          <app-icon [name]="feat.icon" [size]="22" color="#00d4ff"></app-icon>
+        </div>
+        <div class="feature-body">
+          <div class="feature-top">
+            <h3 class="feature-title">{{ feat.title }}</h3>
+            <span class="badge {{ feat.badgeClass }}">{{ feat.badge }}</span>
+          </div>
+          <p class="feature-desc">{{ feat.desc }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="how-it-works">
+  <div class="section-header">
+    <h2 class="section-title">Hogyan működik?</h2>
+    <p class="section-subtitle">Négy lépés, és máris látod a teljes képet.</p>
+  </div>
+
+  <div class="steps-grid">
+    @for (step of steps; track step.num) {
+      <div class="step-card glass-panel">
+        <span class="step-num gradient-text">{{ step.num }}</span>
+        <h3 class="step-title">{{ step.title }}</h3>
+        <p class="step-desc">{{ step.desc }}</p>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ===== CTA BANNER ===== -->
+<section class="cta-section">
+  <div class="cta-card glass-card">
+    <div class="cta-glow"></div>
+    <h2 class="cta-title">Kezdd el ma – ingyen</h2>
+    <p class="cta-sub">Csatlakozz az első felhasználók közé, és alakítsd a saját egészségügyi jövőképedet.</p>
+    <a routerLink="/register" class="btn btn-primary">
+      Regisztrálok most
+      <app-icon name="arrow-right" [size]="16"></app-icon>
+    </a>
+  </div>
+</section>

@@ -1,0 +1,151 @@
+:host { display: block; }
+
+.integrations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: var(--sp-1);
+}
+
+.page-sub { font-size: 14px; color: var(--text-secondary); }
+
+/* Category filter */
+.category-filter {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.cat-btn {
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+
+  &:hover { background: var(--glass-bg-hover); color: var(--text-primary); }
+
+  &.active {
+    background: rgba(0, 212, 255, 0.10);
+    border-color: rgba(0, 212, 255, 0.30);
+    color: var(--accent-cyan);
+  }
+}
+
+/* Sync banner */
+.sync-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-5);
+  background: rgba(0, 255, 136, 0.06) !important;
+  border-color: rgba(0, 255, 136, 0.20) !important;
+
+  span {
+    font-size: 13px;
+    color: var(--accent-green);
+  }
+}
+
+/* Grid */
+.integrations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--sp-5);
+}
+
+.integration-card {
+  padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+
+  &.connected {
+    border-color: rgba(0, 255, 136, 0.18);
+    background: rgba(0, 255, 136, 0.03);
+  }
+}
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-4);
+}
+
+.device-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-lg);
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.device-emoji { font-size: 22px; line-height: 1; }
+
+.device-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.device-name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.device-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.connected-badge { font-size: 10px; }
+
+.device-category { font-size: 10px; }
+
+.device-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.last-sync {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: 12px;
+  color: var(--accent-green);
+}
+
+.connect-btn {
+  align-self: flex-start;
+  font-size: 13px;
+  padding: var(--sp-2) var(--sp-5);
+}

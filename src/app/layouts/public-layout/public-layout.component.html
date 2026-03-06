@@ -1,0 +1,21 @@
+<div class="public-layout">
+  <header class="public-header">
+    <nav class="nav-inner">
+      <a routerLink="/" class="brand">
+        <div class="brand-icon">
+          <app-icon name="activity" [size]="20" color="#00d4ff"></app-icon>
+        </div>
+        <span class="brand-name">Krono<strong>Health</strong></span>
+      </a>
+
+      <div class="nav-links">
+        <a routerLink="/login" class="btn btn-ghost nav-link">Belépés</a>
+        <a routerLink="/register" class="btn btn-primary nav-link">Regisztráció</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="public-main">
+    <router-outlet></router-outlet>
+  </main>
+</div>

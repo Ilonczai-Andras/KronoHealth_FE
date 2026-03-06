@@ -1,277 +1,140 @@
-# KronoHealth Frontend - Sprint 1 Setup Summary
+﻿# KronoHealth Frontend - Sprint 1 Summary
 
-**Date**: March 5, 2026  
-**Framework**: Angular 18  
+**Date**: March 6, 2026  
+**Framework**: Angular 18 Standalone  
 **State Management**: NgRx 17  
-**UI Library**: PrimeNG 17  
-**Status**: ✅ Project Ready
+**Icon System**: lucide-angular (custom KrIconComponent wrapper)  
+**Status**:  Sprint 1 Complete  Zero build errors
 
 ---
 
-## 📦 What's Been Set Up
+##  Sprint Goal
 
-### Core Project Configuration
-- ✅ **Angular 18** with standalone components
-- ✅ **TypeScript 5.4** with strict mode enabled
-- ✅ **SCSS** support with path aliases
-- ✅ **Routing** configured with lazy loading
-- ✅ **HttpClient** pre-configured
-- ✅ **Animations** module enabled
-
-### State Management (NgRx)
-- ✅ **Store** configuration with DevTools integration
-- ✅ **Actions** pattern implemented
-- ✅ **Reducers** for state mutations
-- ✅ **Effects** for side effects (API calls)
-- ✅ **Selectors** for optimized state queries
-- ✅ **Example User feature** (fully functional pattern)
-
-### UI Components (PrimeNG)
-- ✅ **Lara Light Blue theme** configured
-- ✅ **Button module** imported
-- ✅ **Card module** imported
-- ✅ **Primeicons** integrated
-- ✅ **Global styling** for PrimeNG components
-
-### API Integration
-- ✅ **Generic ApiService** with CRUD methods
-- ✅ **Error handling** and logging
-- ✅ **GET, POST, PUT, DELETE** methods
-- ✅ **Environment-based configuration**
-
-### Development Tools
-- ✅ **Angular CLI 18** commands available
-- ✅ **Karma** test runner configured
-- ✅ **Jasmine** testing framework ready
-- ✅ **Development server** with live reload
-- ✅ **Browser compatibility** configuration
+> Egy reszponzív Web App váz, ahol az összes főoldal elérhető, működik a navigáció, és készen állnak a komponensek az API-kapcsolatra.
 
 ---
 
-## 📂 Project Structure
+##  What Was Built
+
+### Design System
+- **Glassmorphism CSS**  full custom design system in `styles.scss`
+  - CSS custom properties: `--bg-primary`, `--accent-cyan: #00d4ff`, `--accent-purple: #7b2ff7`, `--accent-green: #00ff88`
+  - Reusable utility classes: `.glass-card`, `.glass-panel`, `.btn`, `.btn-primary`, `.btn-ghost`, `.badge-*`
+  - Inter font (300800) via Google Fonts
+  - Sidebar (`--sidebar-width: 260px`) and topbar (`--topbar-height: 64px`) layout variables
+
+### Layout Architecture
+- **PublicLayout** (`/`)  header + `<router-outlet>` for unauthenticated pages
+- **DashboardLayout** (`/app`)  protected layout with collapsible Sidebar + Topbar + main content area
+  - `SidebarComponent`  brand logo, nav items with active state, user section, logout
+  - `TopbarComponent`  search field, notification bell, user chip
+
+### Routing (`app.routes.ts`)
+```
+/               PublicLayout
+  (index)       LandingComponent
+  login         LoginComponent
+  register      RegisterComponent
+
+/app            DashboardLayout  [canActivate: authGuard]
+  dashboard     DashboardComponent
+  biomarker-lab BiomarkerLabComponent
+  integrations  IntegrationsComponent
+
+**              redirect to /
+```
+All routes use `loadComponent` lazy loading.
+
+### Auth Guard
+- `src/app/core/guards/auth.guard.ts`  `CanActivateFn`, checks `localStorage.getItem('kh_token')`, redirects to `/login`
+- TODO: replace with NgRx auth state selector in Sprint 2
+
+### Feature Pages
+
+| Page | Route | Description |
+|------|-------|-------------|
+| Landing | `/` | Hero section, features grid, how-it-works steps, CTA |
+| Login | `/login` | Reactive form, email + password validation, show/hide password |
+| Register | `/register` | 5-field form, cross-field password match validator, terms checkbox |
+| Dashboard | `/app/dashboard` | 6 metric cards, weekly bar chart, HRV trend, sleep quality chart |
+| Biomarker Lab | `/app/biomarker-lab` | PDF drag-drop upload zone, 12 blood markers table, report history |
+| Integrations | `/app/integrations` | 8 device cards (Garmin, Oura, Apple Health, etc.), category filter |
+
+### Icon System  `KrIconComponent`
+- **Problem**: `lucide-angular` v0.577.0 was compiled with Angular 13 (`minVersion: "12.0.0"`), causing AOT incompatibility errors in Angular 18 strict template type checking.
+- **Solution**: Created a standalone `KrIconComponent` (`src/app/shared/components/kr-icon/kr-icon.component.ts`) that imports only raw icon data arrays from `lucide-angular` (plain JS, no Angular metadata) and renders SVGs imperatively via `Renderer2`.
+- **Usage**: `<app-icon name="activity" [size]="20" color="#00d4ff"></app-icon>`
+- **Icons**: 35+ supported  activity, moon, heart, zap, trending-up/down, arrow-right, mail, lock, eye, eye-off, user, bell, search, layout-dashboard, flask-conical, plug, settings, log-out, upload, file-text, link, link-2-off, refresh-cw, check-circle, alert-triangle, watch, flame, droplets, microscope, shield, check, chevron-down/right
+
+### State Management (NgRx  ready for wiring)
+- Store configured with DevTools integration
+- `user` feature slice (actions, reducer, effects, selectors) as the established pattern
+- All components have TODO comments marking where NgRx dispatch/select calls will go
+
+---
+
+##  Project Structure
 
 ```
-KronoHealth_FE/
-│
-├── Configuration Files
-│   ├── angular.json                # Angular build config
-│   ├── tsconfig*.json              # TypeScript configs
-│   ├── karma.conf.js               # Test runner config
-│   ├── package.json                # Dependencies
-│   ├── .editorconfig               # Editor settings
-│   ├── .gitignore                  # Git ignore rules
-│   └── .browserslistrc             # Browser support
-│
-├── Source Code (src/)
-│   ├── main.ts                     # App entry point
-│   ├── index.html                  # HTML template
-│   ├── styles.scss                 # Global styles
-│   │
-│   ├── app/
-│   │   ├── app.component.*         # Root component
-│   │   ├── app.routes.ts           # Route definitions
-│   │   │
-│   │   ├── core/                   # Core module
-│   │   │   ├── index.ts            # Core exports
-│   │   │   ├── http/
-│   │   │   │   └── api.service.ts  # HTTP client
-│   │   │   └── services/           # Business services
-│   │   │
-│   │   ├── features/               # Feature modules
-│   │   │   └── dashboard/
-│   │   │       ├── dashboard.component.ts
-│   │   │       ├── dashboard.component.html
-│   │   │       └── dashboard.component.scss
-│   │   │
-│   │   ├── shared/                 # Shared resources
-│   │   │   ├── components/
-│   │   │   ├── directives/
-│   │   │   ├── pipes/
-│   │   │   └── models/
-│   │   │
-│   │   └── store/                  # NgRx Store
-│   │       ├── index.ts            # Store root config
-│   │       └── user/               # Example feature store
-│   │           ├── user.actions.ts
-│   │           ├── user.reducer.ts
-│   │           ├── user.effects.ts
-│   │           └── user.selectors.ts
-│   │
-│   ├── environments/
-│   │   ├── environment.ts          # Dev config
-│   │   └── environment.prod.ts     # Prod config
-│   │
-│   └── assets/                     # Static files
-│
-├── Documentation
-│   ├── README.md                   # Main project info
-│   └── SETUP_GUIDE.md              # Detailed setup guide
-│
-└── .git/                           # Git repository
+src/app/
+ app.routes.ts                         # Full nested lazy routing
+ core/
+    guards/
+       auth.guard.ts                 # NEW: localStorage auth guard
+    http/
+        api.service.ts                # Generic CRUD service
+ layouts/
+    public-layout/                    # NEW
+       public-layout.component.*
+    dashboard-layout/                 # NEW
+        dashboard-layout.component.*
+        components/
+            sidebar/                  # NEW
+            topbar/                   # NEW
+ features/
+    landing/                          # NEW
+    auth/
+       login/                        # NEW
+       register/                     # NEW
+    dashboard/                        # REWRITTEN
+    biomarker-lab/                    # NEW
+    integrations/                     # NEW
+ shared/
+     components/
+         kr-icon/                      # NEW: custom icon component
+             kr-icon.component.ts
 ```
 
 ---
 
-## 🚀 Quick Start Commands
+##  Build Output
+
+```
+Initial chunk files    590 kB  (main + styles + polyfills + runtime)
+Lazy chunk files       ~110 kB total across 10 route chunks
+Build time             ~60s
+Errors                 0
+Warnings               0
+```
+
+---
+
+##  Quick Start Commands
 
 ```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm start
-# Visit: http://localhost:4200
-
-# Build for production
-npm run build
-
-# Run unit tests
-npm test
-
-# Watch for changes
-npm run watch
+npm install          # Install dependencies
+npm start            # Dev server  http://localhost:4200
+npm run build        # Production build
+npm test             # Unit tests (Karma + Jasmine)
 ```
 
 ---
 
-## 🔑 Key Features
+##  Sprint 2  Next Steps
 
-### 1. **Standalone Components**
-- Modern Angular 18 approach
-- No ngModule boilerplate
-- Tree-shakable and optimized
-
-### 2. **NgRx Pattern**
-```
-Component → Dispatch Action → Effects → API Call → Reducer → Store → Selector → Component
-```
-
-### 3. **Dependency Injection**
-```typescript
-constructor(private api: ApiService, private store: Store<AppState>) {}
-```
-
-### 4. **Path Aliases**
-```typescript
-import { ApiService } from '@core/http/api.service';
-import { selectUsers } from '@app/store/user/user.selectors';
-import { environment } from '@environments/environment';
-```
-
-### 5. **Type Safety**
-- Full TypeScript strict mode
-- Type-safe state management
-- Strong typing throughout
-
----
-
-## 📝 Development Patterns
-
-### Pattern 1: Component with State
-```typescript
-@Component({ ... })
-export class MyComponent implements OnInit {
-  data$: Observable<any[]>;
-
-  constructor(private store: Store<AppState>) {
-    this.data$ = this.store.select(selectData);
-  }
-
-  ngOnInit() {
-    this.store.dispatch(loadData());
-  }
-}
-```
-
-### Pattern 2: API Integration
-```typescript
-// Automatically handled through effects
-this.api.get('endpoint').subscribe(data => {
-  // Process data
-});
-```
-
-### Pattern 3: PrimeNG Components
-```typescript
-import { ButtonModule } from 'primeng/button';
-
-@Component({
-  imports: [ButtonModule],
-  template: `<p-button label="Click" (onClick)="..."></p-button>`
-})
-```
-
----
-
-## 📚 Resources
-
-| Resource | Link |
-|----------|------|
-| Angular Docs | https://angular.io/docs |
-| NgRx Guide | https://ngrx.io/docs |
-| PrimeNG Components | https://primeng.org/ |
-| RxJS Operators | https://rxjs.dev/api |
-| TypeScript Handbook | https://www.typescriptlang.org/docs/ |
-
----
-
-## ✅ Checklist for Next Steps
-
-- [ ] Review SETUP_GUIDE.md for detailed instructions
-- [ ] Run `npm install` to install dependencies
-- [ ] Start dev server with `npm start`
-- [ ] Explore the example dashboard component
-- [ ] Check Redux DevTools for state management
-- [ ] Create first feature module
-- [ ] Add API integration
-- [ ] Set up authentication
-- [ ] Configure real API endpoints
-- [ ] Add unit tests
-
----
-
-## 🎯 Sprint 1 Objectives
-
-- [x] Project setup with Angular 18
-- [x] NgRx state management
-- [x] PrimeNG integration
-- [x] API service setup
-- [ ] Authentication module
-- [ ] User management
-- [ ] Dashboard features
-- [ ] Form handling
-- [ ] Error handling
-- [ ] Responsive design
-
----
-
-## 🆘 Troubleshooting
-
-**Issue**: Dependencies won't install
-```bash
-rm -rf node_modules package-lock.json
-npm install
-```
-
-**Issue**: Port 4200 in use
-```bash
-ng serve --port 4300
-```
-
-**Issue**: Changes not reflecting
-```bash
-ng serve --poll 2000
-```
-
----
-
-## 📞 Support
-
-For questions about:
-- **Angular**: See [Angular Docs](https://angular.io)
-- **NgRx**: See [NgRx Documentation](https://ngrx.io)
-- **PrimeNG**: See [PrimeNG Docs](https://primeng.org)
-
----
-
-**Project initialized successfully! 🎉**
+- Wire `LoginComponent`  NgRx `authActions.login`  Effects  JWT storage
+- Replace `localStorage` auth guard with NgRx auth state selector
+- Connect `DashboardComponent` metric cards to real API via `ApiService`
+- Add HTTP interceptor for `Authorization: Bearer <token>` header
+- Implement file upload in `BiomarkerLabComponent` (multipart/form-data)
+- Add OAuth2 flow for Garmin / Oura / Apple Health in `IntegrationsComponent`

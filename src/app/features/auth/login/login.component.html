@@ -1,0 +1,92 @@
+<div class="auth-page">
+  <div class="auth-glow auth-glow--cyan"></div>
+  <div class="auth-glow auth-glow--purple"></div>
+
+  <div class="auth-card glass-card">
+    <!-- Header -->
+    <div class="auth-header">
+      <h1 class="auth-title">Üdv vissza!</h1>
+      <p class="auth-subtitle">Jelentkezz be a fiókodba</p>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+
+      <!-- Email -->
+      <div class="form-field">
+        <label for="email">E-mail cím</label>
+        <div class="input-with-icon">
+          <app-icon name="mail" [size]="16" class="input-icon"></app-icon>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="neve@example.com"
+            [class.error]="email.invalid && email.touched"
+            autocomplete="email"
+          />
+        </div>
+        @if (email.invalid && email.touched) {
+          <span class="form-error">
+            @if (email.errors?.['required']) { Az e-mail cím kötelező. }
+            @else if (email.errors?.['email']) { Érvénytelen e-mail formátum. }
+          </span>
+        }
+      </div>
+
+      <!-- Password -->
+      <div class="form-field">
+        <label for="password">Jelszó</label>
+        <div class="input-with-icon">
+          <app-icon name="lock" [size]="16" class="input-icon"></app-icon>
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Minimum 8 karakter"
+            [class.error]="password.invalid && password.touched"
+            autocomplete="current-password"
+          />
+          <button type="button" class="eye-toggle" (click)="showPassword = !showPassword">
+            <app-icon [name]="showPassword ? 'eye-off' : 'eye'" [size]="16"></app-icon>
+          </button>
+        </div>
+        @if (password.invalid && password.touched) {
+          <span class="form-error">
+            @if (password.errors?.['required']) { A jelszó kötelező. }
+            @else if (password.errors?.['minlength']) { Legalább 8 karakter szükséges. }
+          </span>
+        }
+      </div>
+
+      <!-- Forgot password -->
+      <div class="forgot-row">
+        <a routerLink="/forgot-password" class="forgot-link">Elfelejtett jelszó?</a>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn btn-primary submit-btn" [disabled]="isLoading">
+        @if (isLoading) {
+          <span class="spinner"></span>
+          Belépés...
+        } @else {
+          Belépés
+          <app-icon name="arrow-right" [size]="16"></app-icon>
+        }
+      </button>
+    </form>
+
+    <!-- Divider -->
+    <div class="or-divider">
+      <span class="or-line"></span>
+      <span class="or-text">vagy</span>
+      <span class="or-line"></span>
+    </div>
+
+    <!-- Register link -->
+    <p class="auth-switch">
+      Még nincs fiókod?
+      <a routerLink="/register" class="auth-link">Regisztrálj most</a>
+    </p>
+  </div>
+</div>

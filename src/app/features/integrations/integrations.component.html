@@ -1,0 +1,79 @@
+<div class="integrations">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Integrációk</h1>
+      <p class="page-sub">{{ connectedCount }} eszköz csatlakoztatva · Az adatok automatikusan szinkronizálnak</p>
+    </div>
+    <div class="badge badge-green">
+      <app-icon name="activity" [size]="12"></app-icon>
+      {{ connectedCount }} aktív kapcsolat
+    </div>
+  </div>
+
+  <!-- Category filter -->
+  <div class="category-filter">
+    @for (cat of categories; track cat) {
+      <button
+        class="cat-btn"
+        [class.active]="activeCategory === cat"
+        (click)="activeCategory = cat"
+      >{{ cat }}</button>
+    }
+  </div>
+
+  <!-- Status banner (if any connected) -->
+  @if (connectedCount > 0) {
+    <div class="sync-banner glass-panel">
+      <app-icon name="refresh-cw" [size]="16" color="#00ff88"></app-icon>
+      <span>Az összes csatlakoztatott eszköz szinkronban van. Utolsó frissítés: 2 perce.</span>
+    </div>
+  }
+
+  <!-- Integration cards grid -->
+  <div class="integrations-grid">
+    @for (item of filtered; track item.id) {
+      <div class="integration-card glass-card" [class.connected]="item.connected">
+
+        <div class="card-top">
+          <div class="device-icon" [style.background]="item.color" [style.border-color]="item.accentColor + '40'">
+            <span class="device-emoji">{{ item.icon }}</span>
+          </div>
+          <div class="device-info">
+            <div class="device-name-row">
+              <h3 class="device-name">{{ item.name }}</h3>
+              @if (item.connected) {
+                <span class="badge badge-green connected-badge">Csatlakozva</span>
+              }
+            </div>
+            <span class="device-category badge badge-purple">{{ item.category }}</span>
+          </div>
+        </div>
+
+        <p class="device-desc">{{ item.description }}</p>
+
+        @if (item.connected && item.lastSync) {
+          <div class="last-sync">
+            <app-icon name="refresh-cw" [size]="12" color="var(--accent-green)"></app-icon>
+            <span>Utolsó szinkron: {{ item.lastSync }}</span>
+          </div>
+        }
+
+        <button
+          class="btn connect-btn"
+          [class.btn-primary]="!item.connected"
+          [class.btn-ghost]="item.connected"
+          (click)="toggleConnection(item)"
+        >
+          @if (item.connected) {
+            <app-icon name="link-2-off" [size]="14"></app-icon>
+            Lecsatlakoztatás
+          } @else {
+            <app-icon name="link" [size]="14"></app-icon>
+            Összekötés
+          }
+        </button>
+      </div>
+    }
+  </div>
+</div>
