@@ -110,6 +110,9 @@
       </label>
 
       <!-- Submit -->
+      @if (error) {
+        <div class="form-error-banner">{{ error }}</div>
+      }
       <button type="submit" class="btn btn-primary submit-btn" [disabled]="isLoading">
         @if (isLoading) {
           <span class="spinner"></span>

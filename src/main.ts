@@ -9,6 +9,7 @@ import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { AppComponent } from './app/app.component';
 import { appRoutes } from './app/app.routes';
 import { appStore } from './app/store';
+import { AuthEffects } from './app/store/auth/auth.effects';
 import { environment } from './environments/environment';
 
 const providers = [
@@ -16,7 +17,7 @@ const providers = [
   provideHttpClient(),
   provideRouter(appRoutes),
   provideStore(appStore),
-  provideEffects(),
+  provideEffects(AuthEffects),
   provideStoreDevtools({
     maxAge: 25,
     logOnly: environment.production

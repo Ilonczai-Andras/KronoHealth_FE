@@ -1,11 +1,10 @@
 import { ActionReducerMap } from '@ngrx/store';
+import { AuthState, authReducer } from './auth/auth.reducer';
 
 export interface AppState {
-  // Define your app state slices here
-  // Example: users: UserState;
+  auth: AuthState;
 }
 
 export const appStore: ActionReducerMap<AppState> = {
-  // Register your reducers here
-  // Example: users: userReducer
+  auth: authReducer
 };

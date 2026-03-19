@@ -218,6 +218,17 @@ app-root {
   margin-top: var(--sp-1);
 }
 
+.form-error-banner {
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-md);
+  background: rgba(239, 68, 68, 0.10);
+  border: 1px solid rgba(239, 68, 68, 0.30);
+  color: var(--accent-red);
+  font-size: 13px;
+  margin-bottom: var(--sp-2);
+}
+
 /* --- Badge --- */
 .badge {
   display: inline-flex;
