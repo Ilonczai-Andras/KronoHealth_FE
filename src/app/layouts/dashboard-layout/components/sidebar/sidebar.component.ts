@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { KrIconComponent } from '@shared/components/kr-icon/kr-icon.component';
+import { logout } from '@app/store/auth/auth.actions';
 
 export interface NavItem {
   label: string;
@@ -22,4 +24,11 @@ export class SidebarComponent {
     { label: 'Integrációk',   path: '/app/integrations',  icon: 'plug'             },
     { label: 'Beállítások',   path: '/app/settings',      icon: 'settings'         },
   ];
+
+  constructor(private store: Store) {}
+
+  onLogout(): void {
+    localStorage.removeItem('kh_token');
+    this.store.dispatch(logout());
+  }
 }

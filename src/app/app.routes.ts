@@ -46,6 +46,11 @@ export const appRoutes: Routes = [
         path: 'integrations',
         loadComponent: () => import('./features/integrations/integrations.component').then(m => m.IntegrationsComponent),
         title: 'Integrációk – KronoHealth'
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent),
+        title: 'Profilom – KronoHealth'
       }
     ]
   },

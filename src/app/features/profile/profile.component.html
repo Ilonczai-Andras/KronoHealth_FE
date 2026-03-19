@@ -1,0 +1,292 @@
+<div class="profile-page">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="page-header__icon">
+      <app-icon name="user-circle" [size]="22" color="#00d4ff"></app-icon>
+    </div>
+    <div>
+      <h1 class="page-title">Profilom</h1>
+      <p class="page-subtitle">Egészségügyi alapadatok – BMI, BMR és biomarker küszöbértékek számításához</p>
+    </div>
+  </div>
+
+  <div class="profile-layout">
+
+    <!-- Form card -->
+    <div class="glass-card profile-form-card">
+      <h2 class="card-section-title">Személyes adatok</h2>
+
+      <form [formGroup]="form" (ngSubmit)="onSave()" novalidate class="profile-form">
+
+        <!-- Full name -->
+        <div class="form-field">
+          <label for="fullName">Teljes név</label>
+          <div class="input-with-icon">
+            <app-icon name="user" [size]="16" class="input-icon"></app-icon>
+            <input id="fullName" type="text" formControlName="fullName"
+              placeholder="Pl. Kovács János"
+              [class.error]="fullName.invalid && fullName.touched" />
+          </div>
+          @if (fullName.invalid && fullName.touched) {
+            <span class="form-error">
+              @if (fullName.errors?.['required']) { A név kötelező. }
+              @else if (fullName.errors?.['minlength']) { Legalább 2 karakter szükséges. }
+            </span>
+          }
+        </div>
+
+        <!-- Row: DOB + Sex -->
+        <div class="form-row">
+          <div class="form-field">
+            <label for="dateOfBirth">Születési dátum</label>
+            <div class="input-with-icon">
+              <app-icon name="calendar" [size]="16" class="input-icon"></app-icon>
+              <input id="dateOfBirth" type="date" formControlName="dateOfBirth"
+                [class.error]="dateOfBirth.invalid && dateOfBirth.touched" />
+            </div>
+            @if (dateOfBirth.invalid && dateOfBirth.touched) {
+              <span class="form-error">A születési dátum kötelező.</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="sex">Biológiai nem</label>
+            <div class="input-with-icon">
+              <app-icon name="venus-and-mars" [size]="16" class="input-icon"></app-icon>
+              <select id="sex" formControlName="sex" [class.error]="sex.invalid && sex.touched">
+                <option value="" disabled>Válassz...</option>
+                @for (opt of sexOptions; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+            </div>
+            @if (sex.invalid && sex.touched) {
+              <span class="form-error">A nem megadása kötelező.</span>
+            }
+          </div>
+        </div>
+
+        <!-- Row: Height + Weight -->
+        <div class="form-row">
+          <div class="form-field">
+            <label for="heightCm">Magasság (cm)</label>
+            <div class="input-with-icon">
+              <app-icon name="ruler" [size]="16" class="input-icon"></app-icon>
+              <input id="heightCm" type="number" formControlName="heightCm"
+                placeholder="175"
+                [class.error]="heightCm.invalid && heightCm.touched" />
+            </div>
+            @if (heightCm.invalid && heightCm.touched) {
+              <span class="form-error">
+                @if (heightCm.errors?.['required']) { A magasság kötelező. }
+                @else { 50 – 280 cm között kell lennie. }
+              </span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="weightKg">Testsúly (kg)</label>
+            <div class="input-with-icon">
+              <app-icon name="weight" [size]="16" class="input-icon"></app-icon>
+              <input id="weightKg" type="number" formControlName="weightKg"
+                placeholder="70"
+                [class.error]="weightKg.invalid && weightKg.touched" />
+            </div>
+            @if (weightKg.invalid && weightKg.touched) {
+              <span class="form-error">
+                @if (weightKg.errors?.['required']) { A testsúly kötelező. }
+                @else { 20 – 500 kg között kell lennie. }
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- Activity level -->
+        <div class="form-field">
+          <label for="activityLevel">Aktivitási szint</label>
+          <div class="input-with-icon">
+            <app-icon name="zap" [size]="16" class="input-icon"></app-icon>
+            <select id="activityLevel" formControlName="activityLevel"
+              [class.error]="activityLevel.invalid && activityLevel.touched">
+              <option value="" disabled>Válassz...</option>
+              @for (opt of activityOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+          @if (activityLevel.invalid && activityLevel.touched) {
+            <span class="form-error">Az aktivitási szint kötelező.</span>
+          }
+        </div>
+
+        <button type="submit" class="btn btn-primary save-btn">
+          <app-icon name="save" [size]="16"></app-icon>
+          Adatok mentése
+        </button>
+
+      </form>
+    </div>
+
+    <!-- Metrics card -->
+    <div class="metrics-col">
+
+      <div class="glass-card metric-card">
+        <div class="metric-header">
+          <app-icon name="scale" [size]="18" color="#00d4ff"></app-icon>
+          <span class="metric-title">BMI</span>
+        </div>
+        @if (bmi !== null) {
+          <div class="metric-value" [class]="bmiClass">{{ bmi }}</div>
+          <div class="metric-label" [class]="bmiClass">{{ bmiCategory }}</div>
+          <div class="bmi-bar">
+            <div class="bmi-bar__fill" [style.width.%]="Math.min((bmi / 40) * 100, 100)" [class]="bmiClass"></div>
+          </div>
+        } @else {
+          <div class="metric-empty">Add meg a magasságod és a testsúlyod</div>
+        }
+      </div>
+
+      <div class="glass-card metric-card">
+        <div class="metric-header">
+          <app-icon name="flame" [size]="18" color="#f97316"></app-icon>
+          <span class="metric-title">Alap-anyagcsere (BMR)</span>
+        </div>
+        @if (bmr !== null) {
+          <div class="metric-value ok">{{ bmr }} <span class="metric-unit">kcal/nap</span></div>
+          <div class="metric-label">Mifflin–St Jeor képlet alapján</div>
+        } @else {
+          <div class="metric-empty">Add meg az összes adatot</div>
+        }
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Weight History -->
+  <div class="glass-card weight-history-card">
+
+    <div class="weight-history-header">
+      <div class="weight-history-title">
+        <app-icon name="trending-down" [size]="18" color="#00d4ff"></app-icon>
+        <h2 class="card-section-title">Testsúly-napló</h2>
+      </div>
+      @if (weightDelta !== null) {
+        <div class="weight-delta" [class.delta-up]="weightDelta > 0" [class.delta-down]="weightDelta < 0">
+          <app-icon [name]="weightDelta > 0 ? 'trending-up' : 'trending-down'" [size]="14"></app-icon>
+          {{ weightDelta > 0 ? '+' : '' }}{{ weightDelta }} kg
+          <span class="delta-label">az előző bejegyzéshez képest</span>
+        </div>
+      }
+    </div>
+
+    <!-- Add entry form -->
+    <form [formGroup]="weightForm" (ngSubmit)="addWeightEntry()" novalidate class="weight-entry-form">
+      <div class="weight-entry-fields">
+
+        <div class="form-field">
+          <label for="wDate">Dátum</label>
+          <div class="input-with-icon">
+            <app-icon name="calendar" [size]="16" class="input-icon"></app-icon>
+            <input id="wDate" type="date" formControlName="date"
+              [class.error]="wDate.invalid && wDate.touched" />
+          </div>
+          @if (wDate.invalid && wDate.touched) {
+            <span class="form-error">A dátum kötelező.</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="wWeightKg">Testsúly (kg)</label>
+          <div class="input-with-icon">
+            <app-icon name="scale" [size]="16" class="input-icon"></app-icon>
+            <input id="wWeightKg" type="number" formControlName="weightKg"
+              placeholder="70.5"
+              [class.error]="wWeightKg.invalid && wWeightKg.touched" />
+          </div>
+          @if (wWeightKg.invalid && wWeightKg.touched) {
+            <span class="form-error">
+              @if (wWeightKg.errors?.['required']) { A testsúly kötelező. }
+              @else { 20 – 500 kg között kell lennie. }
+            </span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="wNote">Megjegyzés <span class="optional">(opcionális)</span></label>
+          <div class="input-with-icon">
+            <app-icon name="pencil-line" [size]="16" class="input-icon"></app-icon>
+            <input id="wNote" type="text" formControlName="note" placeholder="Pl. reggeli, éhgyomorra" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary weight-add-btn">
+          <app-icon name="plus" [size]="16"></app-icon>
+          Hozzáad
+        </button>
+
+      </div>
+    </form>
+
+    <!-- Table -->
+    @if (weightHistory.length > 0) {
+      <div class="weight-table-wrap">
+        <table class="weight-table">
+          <thead>
+            <tr>
+              <th>Dátum</th>
+              <th>Testsúly</th>
+              <th>BMI</th>
+              <th>Változás</th>
+              <th>Megjegyzés</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of weightHistory; track entry.date + entry.weightKg; let i = $index) {
+              <tr>
+                <td class="col-date">{{ entry.date | date:'yyyy. MM. dd.' }}</td>
+                <td class="col-weight">{{ entry.weightKg }} <span class="unit">kg</span></td>
+                <td class="col-bmi">
+                  @if (entry.bmi !== null) {
+                    <span class="bmi-badge"
+                      [class.ok]="entry.bmi >= 18.5 && entry.bmi < 25"
+                      [class.warn]="entry.bmi < 18.5 || (entry.bmi >= 25 && entry.bmi < 30)"
+                      [class.danger]="entry.bmi >= 30">
+                      {{ entry.bmi }}
+                    </span>
+                  } @else {
+                    <span class="text-muted">–</span>
+                  }
+                </td>
+                <td class="col-delta">
+                  @if (i < weightHistory.length - 1) {
+                    @let diff = Math.round((entry.weightKg - weightHistory[i + 1].weightKg) * 10) / 10;
+                    <span [class.delta-up]="diff > 0" [class.delta-down]="diff < 0" [class.delta-neutral]="diff === 0">
+                      {{ diff > 0 ? '+' : '' }}{{ diff }} kg
+                    </span>
+                  } @else {
+                    <span class="text-muted">–</span>
+                  }
+                </td>
+                <td class="col-note">{{ entry.note || '–' }}</td>
+                <td class="col-action">
+                  <button class="remove-btn" title="Törlés" (click)="removeWeightEntry(i)">
+                    <app-icon name="trash-2" [size]="14"></app-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="weight-empty">
+        <app-icon name="scale" [size]="32" color="rgba(240,244,255,0.15)"></app-icon>
+        <p>Még nincs bejegyzés. Add meg az első testsúly-adatot!</p>
+      </div>
+    }
+
+  </div>
+
+</div>

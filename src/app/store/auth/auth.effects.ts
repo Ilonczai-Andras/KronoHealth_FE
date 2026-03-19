@@ -50,6 +50,14 @@ export class AuthEffects {
     { dispatch: false }
   );
 
+  logout$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.logout),
+      tap(() => this.router.navigate(['/login']))
+    ),
+    { dispatch: false }
+  );
+
   constructor(
     private actions$: Actions,
     private authService: AuthService,
