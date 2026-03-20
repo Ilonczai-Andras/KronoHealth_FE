@@ -28,6 +28,27 @@ export class UserEffects {
     ),
   );
 
+  saveProfile$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.saveProfile),
+      switchMap(({ request }) =>
+        this.profileService.updateProfile(request).pipe(
+          map((profile) => UserActions.saveProfileSuccess({ profile })),
+          catchError((err) =>
+            of(
+              UserActions.saveProfileFailure({
+                error:
+                  err.error?.message ??
+                  err.message ??
+                  'Profil mentése sikertelen.',
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
   constructor(
     private actions$: Actions,
     private profileService: ProfileService,

@@ -5,3 +5,4 @@ export type { AuthResponse } from './models/auth-response';
 export type { LoginRequest } from './models/login-request';
 export type { RegisterRequest } from './models/register-request';
 export type { UserProfile } from './models/user-profile';
+export type { UpdateProfileRequest } from './models/update-profile-request';

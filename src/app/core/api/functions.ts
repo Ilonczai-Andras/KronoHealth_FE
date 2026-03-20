@@ -7,3 +7,5 @@ export type { Login$Params as Login$Params } from './fn/auth-controller/login';
 export { login as login } from './fn/auth-controller/login';
 export type { GetProfile$Params as GetProfile$Params } from './fn/profile-controller/get-profile';
 export { getProfile as getProfile } from './fn/profile-controller/get-profile';
+export type { UpdateProfile$Params as UpdateProfile$Params } from './fn/profile-controller/update-profile';
+export { updateProfile as updateProfile } from './fn/profile-controller/update-profile';

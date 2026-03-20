@@ -8,10 +8,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { KrIconComponent } from '@shared/components/kr-icon/kr-icon.component';
-import { loadProfile } from '@store/user/user.actions';
+import { loadProfile, saveProfile } from '@store/user/user.actions';
 import {
   selectUserProfile,
   selectUserLoading,
+  selectUserSaving,
+  selectUserSaveError,
 } from '@store/user/user.selectors';
 import { UserProfile } from '@core/api/models/user-profile';
 
@@ -38,6 +40,8 @@ export class ProfileComponent implements OnInit {
 
   profile$ = this.store.select(selectUserProfile);
   loading$ = this.store.select(selectUserLoading);
+  saving$ = this.store.select(selectUserSaving);
+  saveError$ = this.store.select(selectUserSaveError);
   private profileData: UserProfile | null = null;
 
   readonly sexOptions = [
@@ -211,12 +215,43 @@ export class ProfileComponent implements OnInit {
     this.weightHistory = this.weightHistory.filter((_, i) => i !== index);
   }
 
+  private reverseBiologicalSex(value: string): string {
+    const map: Record<string, string> = {
+      male: 'MALE',
+      female: 'FEMALE',
+      other: 'OTHER',
+    };
+    return map[value] ?? value.toUpperCase();
+  }
+
+  private reverseActivityLevel(value: string): string {
+    const map: Record<string, string> = {
+      sedentary: 'SEDENTARY',
+      light: 'LIGHTLY_ACTIVE',
+      moderate: 'MODERATELY_ACTIVE',
+      active: 'VERY_ACTIVE',
+      very_active: 'EXTRA_ACTIVE',
+    };
+    return map[value] ?? value.toUpperCase();
+  }
+
   onSave(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
-    // TODO: dispatch profile save action / call profile API
-    console.log('Profile data:', this.form.value);
+    const { dateOfBirth, sex, heightCm, weightKg, activityLevel } =
+      this.form.value;
+    this.store.dispatch(
+      saveProfile({
+        request: {
+          dateOfBirth,
+          biologicalSex: this.reverseBiologicalSex(sex),
+          heightCm,
+          weightKg,
+          activityLevel: this.reverseActivityLevel(activityLevel),
+        },
+      }),
+    );
   }
 }

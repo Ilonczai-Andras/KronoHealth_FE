@@ -11,4 +11,12 @@ export const selectUserLoading = createSelector(
   selectUserState,
   (s) => s.loading,
 );
+export const selectUserSaving = createSelector(
+  selectUserState,
+  (s) => s.saving,
+);
 export const selectUserError = createSelector(selectUserState, (s) => s.error);
+export const selectUserSaveError = createSelector(
+  selectUserState,
+  (s) => s.saveError,
+);
