@@ -1,15 +1,14 @@
 import { createAction, props } from '@ngrx/store';
+import { UserProfile } from '@core/api/models/user-profile';
 
-export const loadUsers = createAction(
-  '[User Page] Load Users'
+export const loadProfile = createAction('[Profile] Load Profile');
+
+export const loadProfileSuccess = createAction(
+  '[Profile] Load Profile Success',
+  props<{ profile: UserProfile }>(),
 );
 
-export const loadUsersSuccess = createAction(
-  '[User API] Load Users Success',
-  props<{ users: any[] }>()
-);
-
-export const loadUsersFailure = createAction(
-  '[User API] Load Users Failure',
-  props<{ error: string }>()
+export const loadProfileFailure = createAction(
+  '[Profile] Load Profile Failure',
+  props<{ error: string }>(),
 );

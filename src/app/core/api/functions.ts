@@ -5,3 +5,5 @@ export type { Register$Params as Register$Params } from './fn/auth-controller/re
 export { register as register } from './fn/auth-controller/register';
 export type { Login$Params as Login$Params } from './fn/auth-controller/login';
 export { login as login } from './fn/auth-controller/login';
+export type { GetProfile$Params as GetProfile$Params } from './fn/profile-controller/get-profile';
+export { getProfile as getProfile } from './fn/profile-controller/get-profile';

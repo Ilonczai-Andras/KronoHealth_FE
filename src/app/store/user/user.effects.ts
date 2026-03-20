@@ -3,26 +3,33 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import * as UserActions from './user.actions';
-import { ApiService } from '@core/http/api.service';
+import { ProfileService } from '@core/services/profile.service';
 
 @Injectable()
 export class UserEffects {
-  loadUsers$ = createEffect(() =>
+  loadProfile$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(UserActions.loadUsers),
+      ofType(UserActions.loadProfile),
       switchMap(() =>
-        this.api.get<any[]>('users').pipe(
-          map((users) => UserActions.loadUsersSuccess({ users })),
-          catchError((error) =>
-            of(UserActions.loadUsersFailure({ error: error.message }))
-          )
-        )
-      )
-    )
+        this.profileService.getProfile().pipe(
+          map((profile) => UserActions.loadProfileSuccess({ profile })),
+          catchError((err) =>
+            of(
+              UserActions.loadProfileFailure({
+                error:
+                  err.error?.message ??
+                  err.message ??
+                  'Profil betöltése sikertelen.',
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
   );
 
   constructor(
     private actions$: Actions,
-    private api: ApiService
+    private profileService: ProfileService,
   ) {}
 }

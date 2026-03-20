@@ -1,33 +1,34 @@
 import { createReducer, on } from '@ngrx/store';
+import { UserProfile } from '@core/api/models/user-profile';
 import * as UserActions from './user.actions';
 
 export interface UserState {
-  users: any[];
+  profile: UserProfile | null;
   loading: boolean;
   error: string | null;
 }
 
 export const initialState: UserState = {
-  users: [],
+  profile: null,
   loading: false,
-  error: null
+  error: null,
 };
 
 export const userReducer = createReducer(
   initialState,
-  on(UserActions.loadUsers, (state) => ({
+  on(UserActions.loadProfile, (state) => ({
     ...state,
     loading: true,
-    error: null
+    error: null,
   })),
-  on(UserActions.loadUsersSuccess, (state, { users }) => ({
+  on(UserActions.loadProfileSuccess, (state, { profile }) => ({
     ...state,
-    users,
-    loading: false
+    loading: false,
+    profile,
   })),
-  on(UserActions.loadUsersFailure, (state, { error }) => ({
+  on(UserActions.loadProfileFailure, (state, { error }) => ({
     ...state,
+    loading: false,
     error,
-    loading: false
-  }))
+  })),
 );
