@@ -257,8 +257,6 @@
 
 /* Hidden file input */
 .hidden-input { display: none; }
-
-/* Upload progress */
 .upload-progress {
   padding: var(--sp-4) var(--sp-5);
   display: flex;
@@ -345,4 +343,73 @@
   justify-content: center;
   flex-shrink: 0;
   &:hover { background: var(--glass-bg-hover); }
+}
+
+/* ── Document status list ─────────────────────── */
+
+.icon-processing {
+  background: rgba(245, 158, 11, 0.10) !important;
+  border-color: rgba(245, 158, 11, 0.20) !important;
+}
+
+.icon-error {
+  background: rgba(239, 68, 68, 0.10) !important;
+  border-color: rgba(239, 68, 68, 0.20) !important;
+}
+
+.doc-processing,
+.doc-error { cursor: default; }
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.skeleton-line {
+  height: 11px;
+  width: 130px;
+  max-width: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.13) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* Pulsing badge for "Feldolgozás alatt" */
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+.badge-processing {
+  animation: badge-pulse 1.8s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+/* Spinning loader icon */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spin-icon {
+  display: inline-flex;
+  animation: spin 1.4s linear infinite;
+}
+
+/* Error message text */
+.error-msg { color: var(--accent-red) !important; }
+
+/* Empty state */
+.empty-docs {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: var(--sp-8) 0;
 }

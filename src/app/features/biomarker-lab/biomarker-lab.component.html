@@ -179,34 +179,84 @@
       </div>
     </div>
 
-    <!-- Upload history -->
+    <!-- Document status list -->
     <div class="history-section">
       <div class="glass-card history-card">
         <div class="section-top">
           <h2 class="section-heading">
-            <app-icon name="file-text" [size]="18" color="#7b2ff7"></app-icon>
-            Korábbi leletek
+            <app-icon name="files" [size]="18" color="#7b2ff7"></app-icon>
+            Feltöltött leletek
           </h2>
+          <span class="badge badge-cyan">{{ documents.length }}</span>
         </div>
 
         <div class="history-list">
-          @for (r of reports; track r.id) {
-            <div class="report-row glass-panel">
-              <div class="report-icon">
-                <app-icon
-                  name="file-text"
-                  [size]="16"
-                  color="#7b2ff7"
-                ></app-icon>
+          @for (doc of documents; track doc.id) {
+            <div
+              class="report-row glass-panel"
+              [class.doc-processing]="doc.status === 'processing'"
+              [class.doc-error]="doc.status === 'error'"
+            >
+              <!-- Icon -->
+              <div
+                class="report-icon"
+                [class.icon-processing]="doc.status === 'processing'"
+                [class.icon-error]="doc.status === 'error'"
+              >
+                @if (doc.status === "processing") {
+                  <span class="spin-icon">
+                    <app-icon
+                      name="loader"
+                      [size]="16"
+                      color="var(--accent-amber)"
+                    ></app-icon>
+                  </span>
+                } @else if (doc.status === "done") {
+                  <app-icon
+                    name="file-check"
+                    [size]="16"
+                    color="#7b2ff7"
+                  ></app-icon>
+                } @else {
+                  <app-icon
+                    name="file-x"
+                    [size]="16"
+                    color="var(--accent-red)"
+                  ></app-icon>
+                }
               </div>
+
+              <!-- Info -->
               <div class="report-info">
-                <span class="report-lab">{{ r.lab }}</span>
-                <span class="report-date"
-                  >{{ r.date }} · {{ r.markerCount }} marker</span
-                >
+                @if (doc.status === "processing") {
+                  <span class="report-lab">{{ doc.filename }}</span>
+                  <div class="skeleton-line"></div>
+                } @else if (doc.status === "done") {
+                  <span class="report-lab">{{ doc.lab }}</span>
+                  <span class="report-date"
+                    >{{ doc.uploadDate }} · {{ doc.markerCount }} marker</span
+                  >
+                } @else {
+                  <span class="report-lab">{{ doc.filename }}</span>
+                  <span class="report-date error-msg">{{ doc.errorMsg }}</span>
+                }
               </div>
-              <span class="report-id">{{ r.id }}</span>
+
+              <!-- Status badge -->
+              @if (doc.status === "processing") {
+                <span class="badge badge-amber badge-processing"
+                  >Feldolgozás alatt</span
+                >
+              } @else if (doc.status === "done") {
+                <span class="badge badge-green">Kész</span>
+              } @else {
+                <span class="badge badge-red">Hiba</span>
+              }
             </div>
+          }
+
+          @if (documents.length === 0) {
+            <p class="empty-docs">Még nem töltöttél fel leletet.</p>
           }
         </div>
       </div>

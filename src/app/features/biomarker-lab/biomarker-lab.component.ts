@@ -11,11 +11,14 @@ interface BloodMarker {
   trend: 'up' | 'down' | 'neutral';
 }
 
-interface LabReport {
-  date: string;
-  lab: string;
-  markerCount: number;
+interface LabDocument {
   id: string;
+  filename: string;
+  uploadDate: string;
+  status: 'processing' | 'done' | 'error';
+  markerCount?: number;
+  lab?: string;
+  errorMsg?: string;
 }
 
 @Component({
@@ -146,24 +149,35 @@ export class BiomarkerLabComponent {
     },
   ];
 
-  reports: LabReport[] = [
+  documents: LabDocument[] = [
     {
-      date: '2026. február 12.',
+      id: 'DOC-004',
+      filename: 'lelet_2026_marc.pdf',
+      uploadDate: '2026. március 21.',
+      status: 'processing',
+    },
+    {
+      id: 'DOC-003',
+      filename: 'lelet_2026_feb.pdf',
+      uploadDate: '2026. február 12.',
+      status: 'done',
       lab: 'Synlab Magyarország',
       markerCount: 24,
-      id: 'RPT-003',
     },
     {
-      date: '2025. november 3.',
+      id: 'DOC-002',
+      filename: 'lelet_2025_nov.pdf',
+      uploadDate: '2025. november 3.',
+      status: 'done',
       lab: 'Medicover Lab',
       markerCount: 18,
-      id: 'RPT-002',
     },
     {
-      date: '2025. augusztus 8.',
-      lab: 'Synlab Magyarország',
-      markerCount: 22,
-      id: 'RPT-001',
+      id: 'DOC-001',
+      filename: 'scan_2025_aug.pdf',
+      uploadDate: '2025. augusztus 8.',
+      status: 'error',
+      errorMsg: 'A PDF nem olvasható, kérjük tölts fel jobb minőségű fájlt.',
     },
   ];
 
