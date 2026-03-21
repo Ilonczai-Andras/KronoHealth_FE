@@ -360,6 +360,11 @@
 .doc-processing,
 .doc-error { cursor: default; }
 
+.doc-clickable {
+  cursor: pointer;
+  &:hover { background: var(--glass-bg-hover); }
+}
+
 /* Skeleton shimmer */
 @keyframes shimmer {
   0%   { background-position: -200% 0; }

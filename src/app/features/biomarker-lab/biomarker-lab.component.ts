@@ -1,4 +1,5 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { KrIconComponent } from '@shared/components/kr-icon/kr-icon.component';
 
 interface BloodMarker {
@@ -29,6 +30,7 @@ interface LabDocument {
   styleUrls: ['./biomarker-lab.component.scss'],
 })
 export class BiomarkerLabComponent {
+  private router = inject(Router);
   @ViewChild('fileInput') private fileInputRef!: ElementRef<HTMLInputElement>;
 
   isDragging = false;
@@ -236,6 +238,11 @@ export class BiomarkerLabComponent {
         clearInterval(this._uploadTimer);
       }
     }, 200);
+  }
+
+  openReview(doc: LabDocument): void {
+    if (doc.status !== 'done') return;
+    this.router.navigate(['/app/biomarker-lab/review', doc.id]);
   }
 
   resetUpload(): void {

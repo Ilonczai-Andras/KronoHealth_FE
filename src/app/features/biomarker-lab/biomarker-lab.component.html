@@ -196,6 +196,8 @@
               class="report-row glass-panel"
               [class.doc-processing]="doc.status === 'processing'"
               [class.doc-error]="doc.status === 'error'"
+              [class.doc-clickable]="doc.status === 'done'"
+              (click)="openReview(doc)"
             >
               <!-- Icon -->
               <div

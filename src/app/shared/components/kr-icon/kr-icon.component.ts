@@ -48,6 +48,11 @@ import {
   Loader,
   X,
   XCircle,
+  Save,
+  AlertCircle,
+  Info,
+  ChevronLeft,
+  ScanLine,
   LucideIconData,
 } from 'lucide-angular';
 
@@ -95,6 +100,11 @@ const ICONS: Record<string, SVGIconData> = {
   loader: Loader as SVGIconData,
   x: X as SVGIconData,
   'x-circle': XCircle as SVGIconData,
+  save: Save as SVGIconData,
+  'alert-circle': AlertCircle as SVGIconData,
+  info: Info as SVGIconData,
+  'chevron-left': ChevronLeft as SVGIconData,
+  'scan-line': ScanLine as SVGIconData,
 };
 
 @Component({

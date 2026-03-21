@@ -1,0 +1,212 @@
+<div class="review-page">
+  <!-- Top bar -->
+  <div class="review-topbar glass-panel">
+    <button class="back-btn" (click)="goBack()">
+      <app-icon
+        name="chevron-left"
+        [size]="16"
+        color="var(--text-secondary)"
+      ></app-icon>
+      Vissza
+    </button>
+
+    <div class="topbar-title">
+      <app-icon name="scan-line" [size]="18" color="#00d4ff"></app-icon>
+      <span>Lelet átnézése</span>
+      <span class="doc-id-chip">{{ docId }}</span>
+    </div>
+
+    <div class="topbar-actions">
+      <button
+        class="btn btn-primary save-btn"
+        (click)="onSave()"
+        [disabled]="saveState === 'saving'"
+      >
+        @if (saveState === "saving") {
+          <span class="spin-icon">
+            <app-icon name="loader" [size]="15" color="#fff"></app-icon>
+          </span>
+          Mentés...
+        } @else if (saveState === "saved") {
+          <app-icon
+            name="check-circle"
+            [size]="15"
+            color="var(--accent-green)"
+          ></app-icon>
+          Mentve
+        } @else {
+          <app-icon name="save" [size]="15" color="#fff"></app-icon>
+          Adatok mentése
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Split screen -->
+  <div class="split-screen">
+    <!-- LEFT – PDF viewer -->
+    <div class="pdf-panel glass-card">
+      <div class="panel-header">
+        <app-icon name="file-text" [size]="16" color="#00d4ff"></app-icon>
+        <span>Eredeti PDF</span>
+      </div>
+      <div class="pdf-body">
+        @if (pdfUrl === "about:blank") {
+          <div class="pdf-placeholder">
+            <div class="pdf-placeholder-icon">
+              <app-icon
+                name="file-text"
+                [size]="40"
+                color="rgba(0,212,255,0.35)"
+              ></app-icon>
+            </div>
+            <p class="pdf-placeholder-text">A PDF előnézete itt jelenik meg</p>
+            <p class="pdf-placeholder-sub">
+              A backend által visszaadott URL alapján töltődik be
+            </p>
+          </div>
+        } @else {
+          <iframe [src]="pdfUrl" class="pdf-iframe" title="Lelet PDF"></iframe>
+        }
+      </div>
+    </div>
+
+    <!-- RIGHT – Reactive form -->
+    <div class="form-panel">
+      <div class="glass-card form-card">
+        <div class="panel-header">
+          <app-icon name="flask-conical" [size]="16" color="#7b2ff7"></app-icon>
+          <span>Kinyert adatok</span>
+          <span class="badge badge-purple panel-badge"
+            >{{ fields.length }} mező</span
+          >
+        </div>
+
+        <!-- Legend -->
+        <div class="confidence-legend">
+          <span class="legend-item legend-high">
+            <span class="conf-dot dot-high"></span>Magas megbízhatóság
+          </span>
+          <span class="legend-item legend-medium">
+            <span class="conf-dot dot-medium"></span>Közepes
+          </span>
+          <span class="legend-item legend-low">
+            <span class="conf-dot dot-low"></span>Alacsony – ellenőrizd!
+          </span>
+        </div>
+
+        <form [formGroup]="form" class="fields-form" novalidate>
+          @for (field of fields; track field.key) {
+            <div
+              class="field-row"
+              [class.conf-high]="field.confidence === 'high'"
+              [class.conf-medium]="field.confidence === 'medium'"
+              [class.conf-low]="field.confidence === 'low'"
+            >
+              <!-- Label + confidence -->
+              <div class="field-label-row">
+                <label [for]="field.key" class="field-label">{{
+                  field.label
+                }}</label>
+                <div class="conf-info">
+                  <span class="conf-bar-wrap">
+                    <span
+                      class="conf-bar-fill"
+                      [class.fill-high]="field.confidence === 'high'"
+                      [class.fill-medium]="field.confidence === 'medium'"
+                      [class.fill-low]="field.confidence === 'low'"
+                      [style.width.%]="field.confidencePct"
+                    ></span>
+                  </span>
+                  <span
+                    class="conf-pct"
+                    [class.text-high]="field.confidence === 'high'"
+                    [class.text-medium]="field.confidence === 'medium'"
+                    [class.text-low]="field.confidence === 'low'"
+                    >{{ field.confidencePct }}%</span
+                  >
+                </div>
+              </div>
+
+              <!-- Input -->
+              <div
+                class="field-input-wrap"
+                [class.has-error]="hasError(field.key)"
+              >
+                <input
+                  [id]="field.key"
+                  [formControlName]="field.key"
+                  type="text"
+                  class="field-input"
+                  autocomplete="off"
+                />
+                <span class="field-unit">{{ field.unit }}</span>
+                @if (field.confidence === "low") {
+                  <span class="conf-warn-icon">
+                    <app-icon
+                      name="alert-circle"
+                      [size]="14"
+                      color="var(--accent-red)"
+                    ></app-icon>
+                  </span>
+                } @else if (field.confidence === "medium") {
+                  <span class="conf-warn-icon">
+                    <app-icon
+                      name="info"
+                      [size]="14"
+                      color="var(--accent-amber)"
+                    ></app-icon>
+                  </span>
+                }
+              </div>
+
+              @if (hasError(field.key)) {
+                <span class="field-error">Ez a mező kötelező</span>
+              }
+            </div>
+          }
+        </form>
+
+        <!-- Validation summary -->
+        @if (form.invalid && form.touched) {
+          <div class="validation-summary glass-panel">
+            <app-icon
+              name="alert-triangle"
+              [size]="15"
+              color="var(--accent-amber)"
+            ></app-icon>
+            <span
+              >Kérjük, ellenőrizd a pirossal jelölt mezőket mentés előtt.</span
+            >
+          </div>
+        }
+
+        <!-- Footer save -->
+        <div class="form-footer">
+          <button
+            class="btn btn-primary save-btn-footer"
+            (click)="onSave()"
+            [disabled]="saveState === 'saving'"
+          >
+            @if (saveState === "saving") {
+              <span class="spin-icon">
+                <app-icon name="loader" [size]="15" color="#fff"></app-icon>
+              </span>
+              Mentés...
+            } @else if (saveState === "saved") {
+              <app-icon
+                name="check-circle"
+                [size]="15"
+                color="var(--accent-green)"
+              ></app-icon>
+              Sikeresen mentve
+            } @else {
+              <app-icon name="save" [size]="15" color="#fff"></app-icon>
+              Adatok mentése
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
