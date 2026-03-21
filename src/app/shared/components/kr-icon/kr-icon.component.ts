@@ -53,6 +53,8 @@ import {
   Info,
   ChevronLeft,
   ScanLine,
+  Clock,
+  Tag,
   LucideIconData,
 } from 'lucide-angular';
 
@@ -105,6 +107,8 @@ const ICONS: Record<string, SVGIconData> = {
   info: Info as SVGIconData,
   'chevron-left': ChevronLeft as SVGIconData,
   'scan-line': ScanLine as SVGIconData,
+  clock: Clock as SVGIconData,
+  tag: Tag as SVGIconData,
 };
 
 @Component({

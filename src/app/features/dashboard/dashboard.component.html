@@ -3,7 +3,10 @@
   <div class="page-header">
     <div>
       <h1 class="page-title">Jó reggelt, János! 👋</h1>
-      <p class="page-sub">Ma: 2026. március 5. – Longevity Score: <strong class="gradient-text">82/100</strong></p>
+      <p class="page-sub">
+        Ma: 2026. március 5. – Longevity Score:
+        <strong class="gradient-text">82/100</strong>
+      </p>
     </div>
     <div class="header-badge badge badge-green">Szinkronizálva 2 perce</div>
   </div>
@@ -12,7 +15,22 @@
   <div class="metrics-grid">
     @for (m of metrics; track m.title) {
       <div class="metric-card glass-card">
-        <div class="metric-icon" [style.background]="'rgba(' + (m.color === '#7b2ff7' ? '123,47,247' : m.color === '#00d4ff' ? '0,212,255' : m.color === '#00ff88' ? '0,255,136' : m.color === '#f59e0b' ? '245,158,11' : '0,212,255') + ',0.12)'">
+        <div
+          class="metric-icon"
+          [style.background]="
+            'rgba(' +
+            (m.color === '#7b2ff7'
+              ? '123,47,247'
+              : m.color === '#00d4ff'
+                ? '0,212,255'
+                : m.color === '#00ff88'
+                  ? '0,255,136'
+                  : m.color === '#f59e0b'
+                    ? '245,158,11'
+                    : '0,212,255') +
+            ',0.12)'
+          "
+        >
           <app-icon [name]="m.icon" [size]="18" [color]="m.color"></app-icon>
         </div>
         <div class="metric-body">
@@ -21,10 +39,14 @@
             <span class="metric-value">{{ m.value }}</span>
             <span class="metric-unit">{{ m.unit }}</span>
           </div>
-          <div class="metric-change" [class.positive]="m.trend === 'up'" [class.negative]="m.trend === 'down'">
-            @if (m.trend === 'up') {
+          <div
+            class="metric-change"
+            [class.positive]="m.trend === 'up'"
+            [class.negative]="m.trend === 'down'"
+          >
+            @if (m.trend === "up") {
               <app-icon name="trending-up" [size]="12"></app-icon>
-            } @else if (m.trend === 'down') {
+            } @else if (m.trend === "down") {
               <app-icon name="trending-down" [size]="12"></app-icon>
             } @else {
               <app-icon name="minus" [size]="12"></app-icon>
@@ -38,7 +60,6 @@
 
   <!-- Charts row -->
   <div class="charts-row">
-
     <!-- Weekly steps bar chart -->
     <div class="chart-card glass-card">
       <div class="chart-header">
@@ -48,9 +69,16 @@
       <div class="bar-chart">
         @for (d of weeklyData; track d.day) {
           <div class="bar-col">
-            <span class="bar-val-top">{{ d.steps >= 1000 ? (d.steps / 1000 | number:'1.1-1') + 'k' : d.steps }}</span>
+            <span class="bar-val-top">{{
+              d.steps >= 1000
+                ? (d.steps / 1000 | number: "1.1-1") + "k"
+                : d.steps
+            }}</span>
             <div class="bar-wrap">
-              <div class="bar-fill-v" [style.height.%]="getBarHeight(d.steps)"></div>
+              <div
+                class="bar-fill-v"
+                [style.height.%]="getBarHeight(d.steps)"
+              ></div>
             </div>
             <span class="bar-day">{{ d.day }}</span>
           </div>
@@ -88,14 +116,83 @@
           <div class="sleep-row">
             <span class="sleep-day">{{ d.day }}</span>
             <div class="sleep-track">
-              <div class="sleep-fill" [style.width.%]="(d.sleep / 10) * 100"></div>
+              <div
+                class="sleep-fill"
+                [style.width.%]="(d.sleep / 10) * 100"
+              ></div>
             </div>
             <span class="sleep-val">{{ d.sleep }}h</span>
           </div>
         }
       </div>
     </div>
+  </div>
 
+  <!-- Lab history -->
+  <div class="lab-history-section glass-card">
+    <div class="section-top-bar">
+      <div class="section-heading-row">
+        <app-icon name="microscope" [size]="18" color="#00d4ff"></app-icon>
+        <h2 class="section-heading">Korábbi laborértékek</h2>
+      </div>
+      <button
+        class="btn btn-ghost btn-sm"
+        (click)="openLabReview(labHistory[0].id)"
+      >
+        Összes megtekintése
+        <app-icon name="chevron-right" [size]="14"></app-icon>
+      </button>
+    </div>
+
+    <div class="lab-history-table">
+      <!-- Header -->
+      <div class="lh-header">
+        <span>Dátum</span>
+        <span>Labor</span>
+        <span class="lh-hide-sm">Markerek</span>
+        <span>Főbb értékek</span>
+        <span></span>
+      </div>
+
+      @for (entry of labHistory; track entry.id) {
+        <div class="lh-row glass-panel">
+          <div class="lh-date-cell">
+            <app-icon
+              name="clock"
+              [size]="13"
+              color="var(--text-muted)"
+            ></app-icon>
+            <span>{{ entry.date }}</span>
+          </div>
+
+          <span class="lh-lab">{{ entry.lab }}</span>
+
+          <span class="lh-marker-count lh-hide-sm">
+            <span class="badge badge-cyan">{{ entry.markerCount }}</span>
+          </span>
+
+          <div class="lh-key-values">
+            @for (kv of entry.keyValues; track kv.label) {
+              <span
+                class="lh-chip"
+                [class.chip-high]="kv.flag === 'high'"
+                [class.chip-low]="kv.flag === 'low'"
+              >
+                {{ kv.label }}: <strong>{{ kv.value }}</strong
+                >&nbsp;{{ kv.unit }}
+              </span>
+            }
+          </div>
+
+          <button
+            class="btn btn-ghost btn-sm lh-open-btn"
+            (click)="openLabReview(entry.id)"
+          >
+            Megnyitás
+            <app-icon name="chevron-right" [size]="13"></app-icon>
+          </button>
+        </div>
+      }
+    </div>
   </div>
 </div>
-

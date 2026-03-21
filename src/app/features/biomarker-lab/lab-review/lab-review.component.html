@@ -74,114 +74,313 @@
     <!-- RIGHT – Reactive form -->
     <div class="form-panel">
       <div class="glass-card form-card">
-        <div class="panel-header">
-          <app-icon name="flask-conical" [size]="16" color="#7b2ff7"></app-icon>
-          <span>Kinyert adatok</span>
-          <span class="badge badge-purple panel-badge"
-            >{{ fields.length }} mező</span
+        <!-- Tab bar -->
+        <div class="tab-bar">
+          <button
+            class="tab-btn"
+            [class.active]="activeTab === 'fields'"
+            (click)="activeTab = 'fields'"
           >
+            <app-icon
+              name="flask-conical"
+              [size]="14"
+              color="inherit"
+            ></app-icon>
+            Kinyert adatok
+            <span class="badge badge-purple tab-badge">{{
+              fields.length
+            }}</span>
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="activeTab === 'trends'"
+            (click)="activeTab = 'trends'"
+          >
+            <app-icon name="trending-up" [size]="14" color="inherit"></app-icon>
+            Trendek
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="activeTab === 'diagnoses'"
+            (click)="activeTab = 'diagnoses'"
+          >
+            <app-icon name="tag" [size]="14" color="inherit"></app-icon>
+            Diagnózisok
+            @if (selectedBnoCodes.length) {
+              <span class="badge badge-cyan tab-badge">{{
+                selectedBnoCodes.length
+              }}</span>
+            }
+          </button>
         </div>
 
-        <!-- Legend -->
-        <div class="confidence-legend">
-          <span class="legend-item legend-high">
-            <span class="conf-dot dot-high"></span>Magas megbízhatóság
-          </span>
-          <span class="legend-item legend-medium">
-            <span class="conf-dot dot-medium"></span>Közepes
-          </span>
-          <span class="legend-item legend-low">
-            <span class="conf-dot dot-low"></span>Alacsony – ellenőrizd!
-          </span>
-        </div>
+        <!-- ── TAB: Kinyert adatok ──────────────── -->
+        @if (activeTab === "fields") {
+          <div class="confidence-legend">
+            <span class="legend-item">
+              <span class="conf-dot dot-high"></span>Magas megbízhatóság
+            </span>
+            <span class="legend-item">
+              <span class="conf-dot dot-medium"></span>Közepes
+            </span>
+            <span class="legend-item">
+              <span class="conf-dot dot-low"></span>Alacsony – ellenőrizd!
+            </span>
+          </div>
 
-        <form [formGroup]="form" class="fields-form" novalidate>
-          @for (field of fields; track field.key) {
-            <div
-              class="field-row"
-              [class.conf-high]="field.confidence === 'high'"
-              [class.conf-medium]="field.confidence === 'medium'"
-              [class.conf-low]="field.confidence === 'low'"
-            >
-              <!-- Label + confidence -->
-              <div class="field-label-row">
-                <label [for]="field.key" class="field-label">{{
-                  field.label
-                }}</label>
-                <div class="conf-info">
-                  <span class="conf-bar-wrap">
-                    <span
-                      class="conf-bar-fill"
-                      [class.fill-high]="field.confidence === 'high'"
-                      [class.fill-medium]="field.confidence === 'medium'"
-                      [class.fill-low]="field.confidence === 'low'"
-                      [style.width.%]="field.confidencePct"
-                    ></span>
-                  </span>
-                  <span
-                    class="conf-pct"
-                    [class.text-high]="field.confidence === 'high'"
-                    [class.text-medium]="field.confidence === 'medium'"
-                    [class.text-low]="field.confidence === 'low'"
-                    >{{ field.confidencePct }}%</span
-                  >
-                </div>
-              </div>
-
-              <!-- Input -->
+          <form [formGroup]="form" class="fields-form" novalidate>
+            @for (field of fields; track field.key) {
               <div
-                class="field-input-wrap"
-                [class.has-error]="hasError(field.key)"
+                class="field-row"
+                [class.conf-high]="field.confidence === 'high'"
+                [class.conf-medium]="field.confidence === 'medium'"
+                [class.conf-low]="field.confidence === 'low'"
               >
-                <input
-                  [id]="field.key"
-                  [formControlName]="field.key"
-                  type="text"
-                  class="field-input"
-                  autocomplete="off"
-                />
-                <span class="field-unit">{{ field.unit }}</span>
-                @if (field.confidence === "low") {
-                  <span class="conf-warn-icon">
-                    <app-icon
-                      name="alert-circle"
-                      [size]="14"
-                      color="var(--accent-red)"
-                    ></app-icon>
-                  </span>
-                } @else if (field.confidence === "medium") {
-                  <span class="conf-warn-icon">
-                    <app-icon
-                      name="info"
-                      [size]="14"
-                      color="var(--accent-amber)"
-                    ></app-icon>
-                  </span>
+                <div class="field-label-row">
+                  <label [for]="field.key" class="field-label">{{
+                    field.label
+                  }}</label>
+                  <div class="conf-info">
+                    <span class="conf-bar-wrap">
+                      <span
+                        class="conf-bar-fill"
+                        [class.fill-high]="field.confidence === 'high'"
+                        [class.fill-medium]="field.confidence === 'medium'"
+                        [class.fill-low]="field.confidence === 'low'"
+                        [style.width.%]="field.confidencePct"
+                      ></span>
+                    </span>
+                    <span
+                      class="conf-pct"
+                      [class.text-high]="field.confidence === 'high'"
+                      [class.text-medium]="field.confidence === 'medium'"
+                      [class.text-low]="field.confidence === 'low'"
+                      >{{ field.confidencePct }}%</span
+                    >
+                  </div>
+                </div>
+
+                <div
+                  class="field-input-wrap"
+                  [class.has-error]="hasError(field.key)"
+                >
+                  <input
+                    [id]="field.key"
+                    [formControlName]="field.key"
+                    type="text"
+                    class="field-input"
+                    autocomplete="off"
+                  />
+                  <span class="field-unit">{{ field.unit }}</span>
+                  @if (field.confidence === "low") {
+                    <span class="conf-warn-icon">
+                      <app-icon
+                        name="alert-circle"
+                        [size]="14"
+                        color="var(--accent-red)"
+                      ></app-icon>
+                    </span>
+                  } @else if (field.confidence === "medium") {
+                    <span class="conf-warn-icon">
+                      <app-icon
+                        name="info"
+                        [size]="14"
+                        color="var(--accent-amber)"
+                      ></app-icon>
+                    </span>
+                  }
+                </div>
+
+                @if (hasError(field.key)) {
+                  <span class="field-error">Ez a mező kötelező</span>
                 }
               </div>
+            }
+          </form>
 
-              @if (hasError(field.key)) {
-                <span class="field-error">Ez a mező kötelező</span>
-              }
+          @if (form.invalid && form.touched) {
+            <div class="validation-summary glass-panel">
+              <app-icon
+                name="alert-triangle"
+                [size]="15"
+                color="var(--accent-amber)"
+              ></app-icon>
+              <span
+                >Kérjük, ellenőrizd a pirossal jelölt mezőket mentés
+                előtt.</span
+              >
             </div>
           }
-        </form>
+        }
 
-        <!-- Validation summary -->
-        @if (form.invalid && form.touched) {
-          <div class="validation-summary glass-panel">
-            <app-icon
-              name="alert-triangle"
-              [size]="15"
-              color="var(--accent-amber)"
-            ></app-icon>
-            <span
-              >Kérjük, ellenőrizd a pirossal jelölt mezőket mentés előtt.</span
-            >
+        <!-- ── TAB: Trendek ────────────────────── -->
+        @if (activeTab === "trends") {
+          <div class="trends-tab">
+            <!-- Marker picker -->
+            <div class="marker-picker">
+              @for (f of fields; track f.key) {
+                <button
+                  class="marker-chip"
+                  [class.active]="selectedMarker === f.key"
+                  (click)="selectMarker(f.key)"
+                >
+                  {{ f.label }}
+                </button>
+              }
+            </div>
+
+            <!-- Chart -->
+            <div class="chart-container">
+              <div class="chart-meta">
+                <span class="chart-label">{{ currentField?.label }}</span>
+                <span class="chart-unit">{{ currentField?.unit }}</span>
+              </div>
+
+              <svg
+                [attr.viewBox]="'0 0 ' + CHART_W + ' ' + CHART_H"
+                class="trend-svg"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="0%"
+                      stop-color="#00d4ff"
+                      stop-opacity="0.25"
+                    />
+                    <stop offset="100%" stop-color="#00d4ff" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+
+                <!-- Y grid lines -->
+                @for (g of getYGrid(); track g.label) {
+                  <line
+                    [attr.x1]="8"
+                    [attr.y1]="g.y"
+                    [attr.x2]="CHART_W - 8"
+                    [attr.y2]="g.y"
+                    stroke="rgba(255,255,255,0.06)"
+                    stroke-width="1"
+                  />
+                  <text
+                    [attr.x]="4"
+                    [attr.y]="g.y - 2"
+                    class="chart-grid-label"
+                  >
+                    {{ g.label }}
+                  </text>
+                }
+
+                <!-- Area fill -->
+                <path [attr.d]="getChartAreaPath()" fill="url(#chartGrad)" />
+
+                <!-- Line -->
+                <path
+                  [attr.d]="getChartLinePath()"
+                  fill="none"
+                  stroke="#00d4ff"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+
+                <!-- Dots + value labels -->
+                @for (dot of getChartDots(); track dot.date) {
+                  <circle
+                    [attr.cx]="dot.x"
+                    [attr.cy]="dot.y"
+                    r="4"
+                    fill="#00d4ff"
+                    stroke="var(--bg-primary)"
+                    stroke-width="2"
+                  />
+                  <text
+                    [attr.x]="dot.x"
+                    [attr.y]="dot.y - 9"
+                    class="chart-dot-label"
+                    text-anchor="middle"
+                  >
+                    {{ dot.value }}
+                  </text>
+                }
+
+                <!-- X labels -->
+                @for (lbl of getXLabels(); track lbl.label) {
+                  <text
+                    [attr.x]="lbl.x"
+                    [attr.y]="CHART_H - 1"
+                    class="chart-x-label"
+                    text-anchor="middle"
+                  >
+                    {{ lbl.label }}
+                  </text>
+                }
+              </svg>
+            </div>
           </div>
         }
 
-        <!-- Footer save -->
+        <!-- ── TAB: Diagnózisok ────────────────── -->
+        @if (activeTab === "diagnoses") {
+          <div class="diagnoses-tab">
+            <p class="diag-hint">Keresés BNO kód vagy betegségnév alapján</p>
+
+            <!-- Autocomplete input -->
+            <div class="bno-search-wrap">
+              <app-icon
+                name="search"
+                [size]="16"
+                color="var(--text-muted)"
+                class="bno-search-icon"
+              ></app-icon>
+              <input
+                type="text"
+                class="bno-input"
+                placeholder="pl. E11 vagy diabetes..."
+                [value]="bnoQuery"
+                (input)="onBnoInput($event)"
+                (blur)="closeBnoDropdown()"
+              />
+
+              @if (bnoOpen) {
+                <div class="bno-dropdown glass-panel">
+                  @for (result of bnoResults; track result.code) {
+                    <button class="bno-option" (mousedown)="selectBno(result)">
+                      <span class="bno-code">{{ result.code }}</span>
+                      <span class="bno-name">{{ result.name }}</span>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Selected chips -->
+            @if (selectedBnoCodes.length > 0) {
+              <div class="bno-chips">
+                @for (bno of selectedBnoCodes; track bno.code) {
+                  <div class="bno-chip glass-panel">
+                    <span class="bno-chip-code">{{ bno.code }}</span>
+                    <span class="bno-chip-name">{{ bno.name }}</span>
+                    <button
+                      class="bno-chip-remove"
+                      (click)="removeBno(bno.code)"
+                    >
+                      <app-icon
+                        name="x"
+                        [size]="12"
+                        color="var(--text-muted)"
+                      ></app-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="bno-empty">Még nem adtak hozzá diagnózist.</p>
+            }
+          </div>
+        }
+
+        <!-- Footer save (always visible) -->
         <div class="form-footer">
           <button
             class="btn btn-primary save-btn-footer"
