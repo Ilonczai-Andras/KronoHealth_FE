@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { KrIconComponent } from '@shared/components/kr-icon/kr-icon.component';
 
 interface BloodMarker {
@@ -23,30 +23,148 @@ interface LabReport {
   standalone: true,
   imports: [KrIconComponent],
   templateUrl: './biomarker-lab.component.html',
-  styleUrls: ['./biomarker-lab.component.scss']
+  styleUrls: ['./biomarker-lab.component.scss'],
 })
 export class BiomarkerLabComponent {
+  @ViewChild('fileInput') private fileInputRef!: ElementRef<HTMLInputElement>;
+
   isDragging = false;
+  uploadState: 'idle' | 'uploading' | 'done' | 'error' = 'idle';
+  uploadProgress = 0;
+  uploadFileName = '';
+  uploadErrorMsg = '';
+  private _uploadTimer?: ReturnType<typeof setInterval>;
 
   markers: BloodMarker[] = [
-    { name: 'Glükóz',       value: 5.2,  unit: 'mmol/L', ref_min: 3.9,  ref_max: 6.1,  status: 'normal',   trend: 'neutral' },
-    { name: 'HbA1c',        value: 5.8,  unit: '%',       ref_min: 4.0,  ref_max: 5.6,  status: 'high',     trend: 'up'      },
-    { name: 'LDL',          value: 3.1,  unit: 'mmol/L', ref_min: 0,    ref_max: 3.4,  status: 'normal',   trend: 'down'    },
-    { name: 'HDL',          value: 1.2,  unit: 'mmol/L', ref_min: 1.0,  ref_max: 2.5,  status: 'normal',   trend: 'up'      },
-    { name: 'Triglicerid',  value: 2.1,  unit: 'mmol/L', ref_min: 0,    ref_max: 1.7,  status: 'high',     trend: 'up'      },
-    { name: 'TSH',          value: 2.4,  unit: 'mIU/L',  ref_min: 0.4,  ref_max: 4.0,  status: 'normal',   trend: 'neutral' },
-    { name: 'Tesztoszteron',value: 14.5, unit: 'nmol/L', ref_min: 9.9,  ref_max: 27.8, status: 'normal',   trend: 'neutral' },
-    { name: 'Ferritin',     value: 42,   unit: 'ng/mL',  ref_min: 22,   ref_max: 322,  status: 'normal',   trend: 'neutral' },
-    { name: 'D-vitamin',    value: 28,   unit: 'ng/mL',  ref_min: 30,   ref_max: 100,  status: 'low',      trend: 'down'    },
-    { name: 'B12',          value: 185,  unit: 'pg/mL',  ref_min: 180,  ref_max: 900,  status: 'normal',   trend: 'neutral' },
-    { name: 'hsCRP',        value: 0.4,  unit: 'mg/L',   ref_min: 0,    ref_max: 1.0,  status: 'normal',   trend: 'down'    },
-    { name: 'GGT',          value: 65,   unit: 'U/L',    ref_min: 0,    ref_max: 55,   status: 'high',     trend: 'up'      },
+    {
+      name: 'Glükóz',
+      value: 5.2,
+      unit: 'mmol/L',
+      ref_min: 3.9,
+      ref_max: 6.1,
+      status: 'normal',
+      trend: 'neutral',
+    },
+    {
+      name: 'HbA1c',
+      value: 5.8,
+      unit: '%',
+      ref_min: 4.0,
+      ref_max: 5.6,
+      status: 'high',
+      trend: 'up',
+    },
+    {
+      name: 'LDL',
+      value: 3.1,
+      unit: 'mmol/L',
+      ref_min: 0,
+      ref_max: 3.4,
+      status: 'normal',
+      trend: 'down',
+    },
+    {
+      name: 'HDL',
+      value: 1.2,
+      unit: 'mmol/L',
+      ref_min: 1.0,
+      ref_max: 2.5,
+      status: 'normal',
+      trend: 'up',
+    },
+    {
+      name: 'Triglicerid',
+      value: 2.1,
+      unit: 'mmol/L',
+      ref_min: 0,
+      ref_max: 1.7,
+      status: 'high',
+      trend: 'up',
+    },
+    {
+      name: 'TSH',
+      value: 2.4,
+      unit: 'mIU/L',
+      ref_min: 0.4,
+      ref_max: 4.0,
+      status: 'normal',
+      trend: 'neutral',
+    },
+    {
+      name: 'Tesztoszteron',
+      value: 14.5,
+      unit: 'nmol/L',
+      ref_min: 9.9,
+      ref_max: 27.8,
+      status: 'normal',
+      trend: 'neutral',
+    },
+    {
+      name: 'Ferritin',
+      value: 42,
+      unit: 'ng/mL',
+      ref_min: 22,
+      ref_max: 322,
+      status: 'normal',
+      trend: 'neutral',
+    },
+    {
+      name: 'D-vitamin',
+      value: 28,
+      unit: 'ng/mL',
+      ref_min: 30,
+      ref_max: 100,
+      status: 'low',
+      trend: 'down',
+    },
+    {
+      name: 'B12',
+      value: 185,
+      unit: 'pg/mL',
+      ref_min: 180,
+      ref_max: 900,
+      status: 'normal',
+      trend: 'neutral',
+    },
+    {
+      name: 'hsCRP',
+      value: 0.4,
+      unit: 'mg/L',
+      ref_min: 0,
+      ref_max: 1.0,
+      status: 'normal',
+      trend: 'down',
+    },
+    {
+      name: 'GGT',
+      value: 65,
+      unit: 'U/L',
+      ref_min: 0,
+      ref_max: 55,
+      status: 'high',
+      trend: 'up',
+    },
   ];
 
   reports: LabReport[] = [
-    { date: '2026. február 12.', lab: 'Synlab Magyarország', markerCount: 24, id: 'RPT-003' },
-    { date: '2025. november 3.', lab: 'Medicover Lab',       markerCount: 18, id: 'RPT-002' },
-    { date: '2025. augusztus 8.',lab: 'Synlab Magyarország', markerCount: 22, id: 'RPT-001' },
+    {
+      date: '2026. február 12.',
+      lab: 'Synlab Magyarország',
+      markerCount: 24,
+      id: 'RPT-003',
+    },
+    {
+      date: '2025. november 3.',
+      lab: 'Medicover Lab',
+      markerCount: 18,
+      id: 'RPT-002',
+    },
+    {
+      date: '2025. augusztus 8.',
+      lab: 'Synlab Magyarország',
+      markerCount: 22,
+      id: 'RPT-001',
+    },
   ];
 
   onDragOver(e: DragEvent): void {
@@ -54,12 +172,64 @@ export class BiomarkerLabComponent {
     this.isDragging = true;
   }
 
-  onDragLeave(): void { this.isDragging = false; }
+  onDragLeave(): void {
+    this.isDragging = false;
+  }
 
   onDrop(e: DragEvent): void {
     e.preventDefault();
     this.isDragging = false;
-    // TODO: handle file upload
+    const file = e.dataTransfer?.files[0];
+    if (file) this.processFile(file);
+  }
+
+  triggerFileInput(): void {
+    this.fileInputRef.nativeElement.click();
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) this.processFile(file);
+    input.value = '';
+  }
+
+  private processFile(file: File): void {
+    if (file.type !== 'application/pdf') {
+      this.uploadState = 'error';
+      this.uploadFileName = file.name;
+      this.uploadErrorMsg = 'Csak PDF fájl tölthető fel!';
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      this.uploadState = 'error';
+      this.uploadFileName = file.name;
+      this.uploadErrorMsg = 'A fájl mérete meghaladja a 10 MB-ot!';
+      return;
+    }
+    this.uploadFileName = file.name;
+    this.uploadErrorMsg = '';
+    this.uploadProgress = 0;
+    this.uploadState = 'uploading';
+    clearInterval(this._uploadTimer);
+    this._uploadTimer = setInterval(() => {
+      this.uploadProgress = Math.min(
+        this.uploadProgress + Math.round(Math.random() * 15 + 5),
+        100,
+      );
+      if (this.uploadProgress >= 100) {
+        this.uploadState = 'done';
+        clearInterval(this._uploadTimer);
+      }
+    }, 200);
+  }
+
+  resetUpload(): void {
+    clearInterval(this._uploadTimer);
+    this.uploadState = 'idle';
+    this.uploadProgress = 0;
+    this.uploadFileName = '';
+    this.uploadErrorMsg = '';
   }
 
   getBarWidth(m: BloodMarker): number {

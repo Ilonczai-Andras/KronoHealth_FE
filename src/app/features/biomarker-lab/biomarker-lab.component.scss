@@ -254,3 +254,95 @@
   color: var(--text-muted);
   font-family: monospace;
 }
+
+/* Hidden file input */
+.hidden-input { display: none; }
+
+/* Upload progress */
+.upload-progress {
+  padding: var(--sp-4) var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.progress-file-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius);
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .progress-state-done & {
+    background: rgba(0, 230, 118, 0.08);
+    border-color: rgba(0, 230, 118, 0.2);
+  }
+
+  .progress-state-error & {
+    background: rgba(255, 82, 82, 0.08);
+    border-color: rgba(255, 82, 82, 0.2);
+  }
+}
+
+.progress-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.progress-filename {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  &.done  { color: var(--accent-green); }
+  &.error { color: var(--accent-red); }
+}
+
+.progress-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--accent-cyan);
+  transition: width 0.2s ease;
+  &.fill-done  { background: var(--accent-green); }
+  &.fill-error { background: var(--accent-red); }
+}
+
+.progress-close {
+  background: none;
+  border: none;
+  padding: var(--sp-1);
+  cursor: pointer;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  &:hover { background: var(--glass-bg-hover); }
+}

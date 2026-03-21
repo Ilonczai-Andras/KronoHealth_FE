@@ -5,7 +5,7 @@
       <h1 class="page-title">Biomarker Lab</h1>
       <p class="page-sub">Legutóbbi mérés: 2026. február 12. · 24 marker</p>
     </div>
-    <button class="btn btn-primary">
+    <button class="btn btn-primary" (click)="triggerFileInput()">
       <app-icon name="upload" [size]="16"></app-icon>
       Lelet feltöltése
     </button>
@@ -24,13 +24,83 @@
     </div>
     <div class="upload-text">
       <p class="upload-title">Húzd ide a PDF leleteket</p>
-      <p class="upload-sub">vagy <span class="upload-link">böngész a fájlok között</span> · PDF, max. 10 MB</p>
+      <p class="upload-sub">
+        vagy
+        <span class="upload-link" (click)="triggerFileInput()"
+          >böngész a fájlok között</span
+        >
+        · PDF, max. 10 MB
+      </p>
     </div>
   </div>
 
+  <!-- Hidden file input -->
+  <input
+    #fileInput
+    type="file"
+    accept="application/pdf"
+    class="hidden-input"
+    (change)="onFileSelected($event)"
+  />
+
+  <!-- Upload progress -->
+  @if (uploadState !== "idle") {
+    <div
+      class="upload-progress glass-panel"
+      [class.progress-state-done]="uploadState === 'done'"
+      [class.progress-state-error]="uploadState === 'error'"
+    >
+      <div class="progress-row">
+        <div class="progress-file-icon">
+          @if (uploadState === "uploading") {
+            <app-icon
+              name="file-text"
+              [size]="16"
+              color="var(--accent-cyan)"
+            ></app-icon>
+          } @else if (uploadState === "done") {
+            <app-icon
+              name="check-circle"
+              [size]="16"
+              color="var(--accent-green)"
+            ></app-icon>
+          } @else {
+            <app-icon
+              name="x-circle"
+              [size]="16"
+              color="var(--accent-red)"
+            ></app-icon>
+          }
+        </div>
+        <div class="progress-meta">
+          <span class="progress-filename">{{ uploadFileName }}</span>
+          @if (uploadState === "uploading") {
+            <span class="progress-label"
+              >Feltöltés... {{ uploadProgress }}%</span
+            >
+          } @else if (uploadState === "done") {
+            <span class="progress-label done">Sikeresen feltöltve</span>
+          } @else {
+            <span class="progress-label error">{{ uploadErrorMsg }}</span>
+          }
+        </div>
+        <button class="progress-close" (click)="resetUpload()">
+          <app-icon name="x" [size]="14" color="var(--text-muted)"></app-icon>
+        </button>
+      </div>
+      <div class="progress-track">
+        <div
+          class="progress-fill"
+          [class.fill-done]="uploadState === 'done'"
+          [class.fill-error]="uploadState === 'error'"
+          [style.width.%]="uploadState === 'error' ? 100 : uploadProgress"
+        ></div>
+      </div>
+    </div>
+  }
+
   <!-- Main content: markers table + history -->
   <div class="content-grid">
-
     <!-- Markers table -->
     <div class="markers-section glass-card">
       <div class="section-top">
@@ -62,27 +132,43 @@
             <div class="ref-bar-cell">
               <span class="ref-min">{{ m.ref_min }}</span>
               <div class="ref-track">
-                <div class="ref-fill" [style.width.%]="getBarWidth(m)" [class]="'fill-' + m.status"></div>
+                <div
+                  class="ref-fill"
+                  [style.width.%]="getBarWidth(m)"
+                  [class]="'fill-' + m.status"
+                ></div>
               </div>
               <span class="ref-max">{{ m.ref_max }}</span>
             </div>
 
             <div class="trend-cell">
-              @if (m.trend === 'up') {
-                <app-icon name="trending-up" [size]="14" color="var(--accent-green)"></app-icon>
-              } @else if (m.trend === 'down') {
-                <app-icon name="trending-down" [size]="14" color="var(--accent-red)"></app-icon>
+              @if (m.trend === "up") {
+                <app-icon
+                  name="trending-up"
+                  [size]="14"
+                  color="var(--accent-green)"
+                ></app-icon>
+              } @else if (m.trend === "down") {
+                <app-icon
+                  name="trending-down"
+                  [size]="14"
+                  color="var(--accent-red)"
+                ></app-icon>
               } @else {
-                <app-icon name="minus" [size]="14" color="var(--text-muted)"></app-icon>
+                <app-icon
+                  name="minus"
+                  [size]="14"
+                  color="var(--text-muted)"
+                ></app-icon>
               }
             </div>
 
             <div class="status-cell">
-              @if (m.status === 'normal') {
+              @if (m.status === "normal") {
                 <span class="badge badge-green">Normál</span>
-              } @else if (m.status === 'high') {
+              } @else if (m.status === "high") {
                 <span class="badge badge-amber">Magas</span>
-              } @else if (m.status === 'low') {
+              } @else if (m.status === "low") {
                 <span class="badge badge-amber">Alacsony</span>
               } @else {
                 <span class="badge badge-purple">Kritikus</span>
@@ -107,11 +193,17 @@
           @for (r of reports; track r.id) {
             <div class="report-row glass-panel">
               <div class="report-icon">
-                <app-icon name="file-text" [size]="16" color="#7b2ff7"></app-icon>
+                <app-icon
+                  name="file-text"
+                  [size]="16"
+                  color="#7b2ff7"
+                ></app-icon>
               </div>
               <div class="report-info">
                 <span class="report-lab">{{ r.lab }}</span>
-                <span class="report-date">{{ r.date }} · {{ r.markerCount }} marker</span>
+                <span class="report-date"
+                  >{{ r.date }} · {{ r.markerCount }} marker</span
+                >
               </div>
               <span class="report-id">{{ r.id }}</span>
             </div>
@@ -119,6 +211,5 @@
         </div>
       </div>
     </div>
-
   </div>
 </div>
