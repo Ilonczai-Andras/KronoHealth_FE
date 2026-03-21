@@ -8,8 +8,12 @@
       <p class="auth-subtitle">Ingyenes – 30 napig próbaidőszak</p>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
-
+    <form
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+      class="auth-form"
+      novalidate
+    >
       <!-- Full Name -->
       <div class="form-field">
         <label for="fullName">Teljes név</label>
@@ -26,8 +30,11 @@
         </div>
         @if (fullName.invalid && fullName.touched) {
           <span class="form-error">
-            @if (fullName.errors?.['required']) { A név kötelező. }
-            @else if (fullName.errors?.['minlength']) { Legalább 2 karakter szükséges. }
+            @if (fullName.errors?.["required"]) {
+              A név kötelező.
+            } @else if (fullName.errors?.["minlength"]) {
+              Legalább 2 karakter szükséges.
+            }
           </span>
         }
       </div>
@@ -48,8 +55,11 @@
         </div>
         @if (email.invalid && email.touched) {
           <span class="form-error">
-            @if (email.errors?.['required']) { Az e-mail cím kötelező. }
-            @else if (email.errors?.['email']) { Érvénytelen e-mail formátum. }
+            @if (email.errors?.["required"]) {
+              Az e-mail cím kötelező.
+            } @else if (email.errors?.["email"]) {
+              Érvénytelen e-mail formátum.
+            }
           </span>
         }
       </div>
@@ -67,11 +77,20 @@
             [class.error]="password.invalid && password.touched"
             autocomplete="new-password"
           />
-          <button type="button" class="eye-toggle" (click)="showPassword = !showPassword">
-            <app-icon [name]="showPassword ? 'eye-off' : 'eye'" [size]="16"></app-icon>
+          <button
+            type="button"
+            class="eye-toggle"
+            (click)="showPassword = !showPassword"
+          >
+            <app-icon
+              [name]="showPassword ? 'eye-off' : 'eye'"
+              [size]="16"
+            ></app-icon>
           </button>
         </div>
-        @if (password.invalid && password.touched && password.errors?.['minlength']) {
+        @if (
+          password.invalid && password.touched && password.errors?.["minlength"]
+        ) {
           <span class="form-error">Legalább 8 karakter szükséges.</span>
         }
       </div>
@@ -86,21 +105,37 @@
             [type]="showConfirmPassword ? 'text' : 'password'"
             formControlName="confirmPassword"
             placeholder="Írd be újra a jelszót"
-            [class.error]="form.errors?.['passwordMismatch'] && confirmPassword.touched"
+            [class.error]="
+              form.errors?.['passwordMismatch'] && confirmPassword.touched
+            "
             autocomplete="new-password"
           />
-          <button type="button" class="eye-toggle" (click)="showConfirmPassword = !showConfirmPassword">
-            <app-icon [name]="showConfirmPassword ? 'eye-off' : 'eye'" [size]="16"></app-icon>
+          <button
+            type="button"
+            class="eye-toggle"
+            (click)="showConfirmPassword = !showConfirmPassword"
+          >
+            <app-icon
+              [name]="showConfirmPassword ? 'eye-off' : 'eye'"
+              [size]="16"
+            ></app-icon>
           </button>
         </div>
-        @if (form.errors?.['passwordMismatch'] && confirmPassword.touched) {
+        @if (form.errors?.["passwordMismatch"] && confirmPassword.touched) {
           <span class="form-error">A két jelszó nem egyezik.</span>
         }
       </div>
 
       <!-- Terms -->
-      <label class="terms-row" [class.terms-error]="acceptTerms.invalid && acceptTerms.touched">
-        <input type="checkbox" formControlName="acceptTerms" class="terms-checkbox" />
+      <label
+        class="terms-row"
+        [class.terms-error]="acceptTerms.invalid && acceptTerms.touched"
+      >
+        <input
+          type="checkbox"
+          formControlName="acceptTerms"
+          class="terms-checkbox"
+        />
         <span class="terms-text">
           Elfogadom az
           <a href="#" class="auth-link">Általános Szerződési Feltételeket</a>
@@ -113,9 +148,13 @@
       @if (error) {
         <div class="form-error-banner">{{ error }}</div>
       }
-      <button type="submit" class="btn btn-primary submit-btn" [disabled]="isLoading">
+      <button
+        type="submit"
+        class="btn btn-primary submit-btn"
+        [disabled]="isLoading"
+      >
         @if (isLoading) {
-          <span class="spinner"></span>
+          <kr-spinner size="sm"></kr-spinner>
           Fiók létrehozása...
         } @else {
           Fiók létrehozása

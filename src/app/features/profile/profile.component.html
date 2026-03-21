@@ -16,6 +16,9 @@
   <div class="profile-layout">
     <!-- Form card -->
     <div class="glass-card profile-form-card">
+      @if (loading$ | async) {
+        <kr-spinner [overlay]="true" size="lg"></kr-spinner>
+      }
       <h2 class="card-section-title">Személyes adatok</h2>
 
       <form
@@ -171,7 +174,7 @@
           [disabled]="saving$ | async"
         >
           @if (saving$ | async) {
-            <app-icon name="loader" [size]="16"></app-icon>
+            <kr-spinner size="sm"></kr-spinner>
             Mentés...
           } @else {
             <app-icon name="save" [size]="16"></app-icon>

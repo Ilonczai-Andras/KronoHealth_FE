@@ -54,6 +54,8 @@
 /* ── Form card ──────────────────────────────────────────── */
 .profile-form-card {
   padding: var(--sp-6);
+  position: relative;
+  overflow: hidden;
 }
 
 .card-section-title {

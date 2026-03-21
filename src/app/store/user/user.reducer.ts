@@ -1,6 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import { UserProfile } from '@core/api/models/user-profile';
 import * as UserActions from './user.actions';
+import * as AuthActions from '../auth/auth.actions';
 
 export interface UserState {
   profile: UserProfile | null;
@@ -50,4 +51,5 @@ export const userReducer = createReducer(
     saving: false,
     saveError: error,
   })),
+  on(AuthActions.logout, () => initialState),
 );

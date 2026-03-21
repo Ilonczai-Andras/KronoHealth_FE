@@ -1,16 +1,29 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { KrIconComponent } from '@shared/components/kr-icon/kr-icon.component';
+import { KrSpinnerComponent } from '@shared/components/kr-spinner/kr-spinner.component';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { registerAction } from '@app/store/auth/auth.actions';
-import { selectAuthLoading, selectAuthError } from '@app/store/auth/auth.selectors';
+import {
+  selectAuthLoading,
+  selectAuthError,
+} from '@app/store/auth/auth.selectors';
 
-function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-  const pw  = control.get('password')?.value;
+function passwordMatchValidator(
+  control: AbstractControl,
+): ValidationErrors | null {
+  const pw = control.get('password')?.value;
   const pw2 = control.get('confirmPassword')?.value;
   return pw && pw2 && pw !== pw2 ? { passwordMismatch: true } : null;
 }
@@ -18,36 +31,50 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, KrIconComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    KrIconComponent,
+    KrSpinnerComponent,
+  ],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+  styleUrls: ['./register.component.scss'],
 })
 export class RegisterComponent implements OnInit, OnDestroy {
-
-  showPassword        = false;
+  showPassword = false;
   showConfirmPassword = false;
-  isLoading           = false;
+  isLoading = false;
   error: string | null = null;
 
   form: FormGroup;
   private destroy$ = new Subject<void>();
 
-  constructor(private fb: FormBuilder, private store: Store) {
+  constructor(
+    private fb: FormBuilder,
+    private store: Store,
+  ) {
     this.form = this.fb.group(
       {
-        fullName:        ['', [Validators.required, Validators.minLength(2)]],
-        email:           ['', [Validators.required, Validators.email]],
-        password:        ['', [Validators.required, Validators.minLength(8)]],
+        fullName: ['', [Validators.required, Validators.minLength(2)]],
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(8)]],
         confirmPassword: ['', Validators.required],
-        acceptTerms:     [false, Validators.requiredTrue]
+        acceptTerms: [false, Validators.requiredTrue],
       },
-      { validators: passwordMatchValidator }
+      { validators: passwordMatchValidator },
     );
   }
 
   ngOnInit(): void {
-    this.store.select(selectAuthLoading).pipe(takeUntil(this.destroy$)).subscribe(l => this.isLoading = l);
-    this.store.select(selectAuthError).pipe(takeUntil(this.destroy$)).subscribe(e => this.error = e);
+    this.store
+      .select(selectAuthLoading)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((l) => (this.isLoading = l));
+    this.store
+      .select(selectAuthError)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((e) => (this.error = e));
   }
 
   ngOnDestroy(): void {
@@ -55,11 +82,21 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  get fullName()        { return this.form.get('fullName')!; }
-  get email()           { return this.form.get('email')!; }
-  get password()        { return this.form.get('password')!; }
-  get confirmPassword() { return this.form.get('confirmPassword')!; }
-  get acceptTerms()     { return this.form.get('acceptTerms')!; }
+  get fullName() {
+    return this.form.get('fullName')!;
+  }
+  get email() {
+    return this.form.get('email')!;
+  }
+  get password() {
+    return this.form.get('password')!;
+  }
+  get confirmPassword() {
+    return this.form.get('confirmPassword')!;
+  }
+  get acceptTerms() {
+    return this.form.get('acceptTerms')!;
+  }
 
   onSubmit(): void {
     if (this.form.invalid) {

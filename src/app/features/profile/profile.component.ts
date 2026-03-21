@@ -8,6 +8,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { KrIconComponent } from '@shared/components/kr-icon/kr-icon.component';
+import { KrSpinnerComponent } from '@shared/components/kr-spinner/kr-spinner.component';
 import { loadProfile, saveProfile } from '@store/user/user.actions';
 import {
   selectUserProfile,
@@ -27,7 +28,12 @@ export interface WeightEntry {
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, KrIconComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    KrIconComponent,
+    KrSpinnerComponent,
+  ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
 })

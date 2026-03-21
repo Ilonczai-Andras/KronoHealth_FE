@@ -16,10 +16,24 @@
     <!-- User profile -->
     <a routerLink="/app/profile" class="user-chip">
       <div class="user-avatar">
-        <app-icon name="user" [size]="14" color="#00d4ff"></app-icon>
+        @if (userLoading$ | async) {
+          <kr-spinner size="sm"></kr-spinner>
+        } @else {
+          <app-icon name="user" [size]="14" color="#00d4ff"></app-icon>
+        }
       </div>
-      <span class="user-label">Profil</span>
-      <app-icon name="chevron-down" [size]="14" color="var(--text-muted)"></app-icon>
+      <span class="user-label">
+        @if (userLoading$ | async) {
+          Betöltés...
+        } @else {
+          {{ (profile$ | async)?.name || "Profil" }}
+        }
+      </span>
+      <app-icon
+        name="chevron-down"
+        [size]="14"
+        color="var(--text-muted)"
+      ></app-icon>
     </a>
   </div>
 </header>

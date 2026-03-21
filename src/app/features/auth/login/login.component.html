@@ -10,8 +10,12 @@
     </div>
 
     <!-- Form -->
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
-
+    <form
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+      class="auth-form"
+      novalidate
+    >
       <!-- Email -->
       <div class="form-field">
         <label for="email">E-mail cím</label>
@@ -28,8 +32,11 @@
         </div>
         @if (email.invalid && email.touched) {
           <span class="form-error">
-            @if (email.errors?.['required']) { Az e-mail cím kötelező. }
-            @else if (email.errors?.['email']) { Érvénytelen e-mail formátum. }
+            @if (email.errors?.["required"]) {
+              Az e-mail cím kötelező.
+            } @else if (email.errors?.["email"]) {
+              Érvénytelen e-mail formátum.
+            }
           </span>
         }
       </div>
@@ -47,30 +54,46 @@
             [class.error]="password.invalid && password.touched"
             autocomplete="current-password"
           />
-          <button type="button" class="eye-toggle" (click)="showPassword = !showPassword">
-            <app-icon [name]="showPassword ? 'eye-off' : 'eye'" [size]="16"></app-icon>
+          <button
+            type="button"
+            class="eye-toggle"
+            (click)="showPassword = !showPassword"
+          >
+            <app-icon
+              [name]="showPassword ? 'eye-off' : 'eye'"
+              [size]="16"
+            ></app-icon>
           </button>
         </div>
         @if (password.invalid && password.touched) {
           <span class="form-error">
-            @if (password.errors?.['required']) { A jelszó kötelező. }
-            @else if (password.errors?.['minlength']) { Legalább 8 karakter szükséges. }
+            @if (password.errors?.["required"]) {
+              A jelszó kötelező.
+            } @else if (password.errors?.["minlength"]) {
+              Legalább 8 karakter szükséges.
+            }
           </span>
         }
       </div>
 
       <!-- Forgot password -->
       <div class="forgot-row">
-        <a routerLink="/forgot-password" class="forgot-link">Elfelejtett jelszó?</a>
+        <a routerLink="/forgot-password" class="forgot-link"
+          >Elfelejtett jelszó?</a
+        >
       </div>
 
       <!-- Submit -->
       @if (error) {
         <div class="form-error-banner">{{ error }}</div>
       }
-      <button type="submit" class="btn btn-primary submit-btn" [disabled]="isLoading">
+      <button
+        type="submit"
+        class="btn btn-primary submit-btn"
+        [disabled]="isLoading"
+      >
         @if (isLoading) {
-          <span class="spinner"></span>
+          <kr-spinner size="sm"></kr-spinner>
           Belépés...
         } @else {
           Belépés
