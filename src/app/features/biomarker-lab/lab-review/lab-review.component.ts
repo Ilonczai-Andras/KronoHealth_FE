@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   FormBuilder,
@@ -7,7 +7,13 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Store } from '@ngrx/store';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { KrIconComponent } from '@shared/components/kr-icon/kr-icon.component';
+import { DocumentsService } from '@core/services/documents.service';
+import { ToastService } from '@shared/services/toast.service';
+import { selectAllAnalysisUpdates } from '../../../store/analysis/analysis.selectors';
 
 export type ConfidenceLevel = 'high' | 'medium' | 'low';
 
@@ -217,10 +223,15 @@ const MOCK_BNO: BnoCode[] = [
   templateUrl: './lab-review.component.html',
   styleUrls: ['./lab-review.component.scss'],
 })
-export class LabReviewComponent implements OnInit {
+export class LabReviewComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+  private store = inject(Store);
+  private documentsService = inject(DocumentsService);
+  private toastService = inject(ToastService);
+
+  private analysisSub?: Subscription;
 
   docId = '';
   fields: LabField[] = MOCK_FIELDS;
@@ -366,6 +377,37 @@ export class LabReviewComponent implements OnInit {
   ngOnInit(): void {
     this.docId = this.route.snapshot.paramMap.get('id') ?? '';
     this.buildForm();
+    this.subscribeToAnalysisUpdates();
+  }
+
+  ngOnDestroy(): void {
+    this.analysisSub?.unsubscribe();
+  }
+
+  private subscribeToAnalysisUpdates(): void {
+    this.analysisSub = this.store
+      .select(selectAllAnalysisUpdates)
+      .pipe(filter((updates) => !!updates[this.docId]))
+      .subscribe((updates) => {
+        const event = updates[this.docId];
+        if (event.status === 'COMPLETED') {
+          // Re-fetch analysis data from the backend
+          this.documentsService.getAnalysis(this.docId).subscribe({
+            next: () => {
+              this.toastService.show(
+                'Az elemzés frissítve – az adatok újratöltve.',
+                'success',
+              );
+            },
+            error: () => {
+              this.toastService.show(
+                'Az elemzés kész, de az adatok betöltése sikertelen.',
+                'error',
+              );
+            },
+          });
+        }
+      });
   }
 
   private buildForm(): void {

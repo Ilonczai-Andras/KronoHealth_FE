@@ -4,6 +4,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { AuthService } from '@core/services/auth.service';
+import { AnalysisEventsService } from '@core/services/analysis-events.service';
 import * as AuthActions from './auth.actions';
 import * as UserActions from '../user/user.actions';
 
@@ -56,6 +57,7 @@ export class AuthEffects {
         tap(({ response }) => {
           if (response.access_token) {
             localStorage.setItem('kh_token', response.access_token);
+            this.analysisEventsService.connect(response.access_token);
           }
           this.router.navigate(['/app/dashboard']);
         }),
@@ -74,7 +76,11 @@ export class AuthEffects {
     () =>
       this.actions$.pipe(
         ofType(AuthActions.logout),
-        tap(() => this.router.navigate(['/login'])),
+        tap(() => {
+          localStorage.removeItem('kh_token');
+          this.analysisEventsService.disconnect();
+          this.router.navigate(['/login']);
+        }),
       ),
     { dispatch: false },
   );
@@ -82,6 +88,7 @@ export class AuthEffects {
   constructor(
     private actions$: Actions,
     private authService: AuthService,
+    private analysisEventsService: AnalysisEventsService,
     private router: Router,
   ) {}
 }

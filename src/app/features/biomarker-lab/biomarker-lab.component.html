@@ -3,7 +3,13 @@
   <div class="page-header">
     <div>
       <h1 class="page-title">Biomarker Lab</h1>
-      <p class="page-sub">Legutóbbi mérés: 2026. február 12. · 24 marker</p>
+      @if (mostRecentDate) {
+        <p class="page-sub">
+          Legutóbbi mérés: {{ mostRecentDate }} · {{ mostRecentMarkerCount }} marker
+        </p>
+      } @else {
+        <p class="page-sub">Még nem töltöttél fel leletett.</p>
+      }
     </div>
     <button class="btn btn-primary" (click)="triggerFileInput()">
       <app-icon name="upload" [size]="16"></app-icon>
@@ -108,75 +114,83 @@
           <app-icon name="flask-conical" [size]="18" color="#00d4ff"></app-icon>
           Aktuális vérkép
         </h2>
-        <span class="badge badge-cyan">{{ markers.length }} marker</span>
-      </div>
-
-      <div class="markers-table">
-        <div class="table-header">
-          <span>Marker</span>
-          <span>Érték</span>
-          <span>Referencia</span>
-          <span>Trend</span>
-          <span>Státusz</span>
-        </div>
-
-        @for (m of markers; track m.name) {
-          <div class="table-row" [class]="'status-' + m.status">
-            <span class="marker-name">{{ m.name }}</span>
-
-            <div class="marker-value-cell">
-              <span class="marker-value">{{ m.value }}</span>
-              <span class="marker-unit">{{ m.unit }}</span>
-            </div>
-
-            <div class="ref-bar-cell">
-              <span class="ref-min">{{ m.ref_min }}</span>
-              <div class="ref-track">
-                <div
-                  class="ref-fill"
-                  [style.width.%]="getBarWidth(m)"
-                  [class]="'fill-' + m.status"
-                ></div>
-              </div>
-              <span class="ref-max">{{ m.ref_max }}</span>
-            </div>
-
-            <div class="trend-cell">
-              @if (m.trend === "up") {
-                <app-icon
-                  name="trending-up"
-                  [size]="14"
-                  color="var(--accent-green)"
-                ></app-icon>
-              } @else if (m.trend === "down") {
-                <app-icon
-                  name="trending-down"
-                  [size]="14"
-                  color="var(--accent-red)"
-                ></app-icon>
-              } @else {
-                <app-icon
-                  name="minus"
-                  [size]="14"
-                  color="var(--text-muted)"
-                ></app-icon>
-              }
-            </div>
-
-            <div class="status-cell">
-              @if (m.status === "normal") {
-                <span class="badge badge-green">Normál</span>
-              } @else if (m.status === "high") {
-                <span class="badge badge-amber">Magas</span>
-              } @else if (m.status === "low") {
-                <span class="badge badge-amber">Alacsony</span>
-              } @else {
-                <span class="badge badge-purple">Kritikus</span>
-              }
-            </div>
-          </div>
+        @if (markers.length > 0) {
+          <span class="badge badge-cyan">{{ markers.length }} marker</span>
         }
       </div>
+
+      @if (loadingMarkers) {
+        <p class="empty-docs">Markerek betöltése...</p>
+      } @else if (markers.length === 0) {
+        <p class="empty-docs">Még nincs elemzett lelet. Tölts fel egy PDF-et!</p>
+      } @else {
+        <div class="markers-table">
+          <div class="table-header">
+            <span>Marker</span>
+            <span>Érték</span>
+            <span>Referencia</span>
+            <span>Trend</span>
+            <span>Státusz</span>
+          </div>
+
+          @for (m of markers; track m.name) {
+            <div class="table-row" [class]="'status-' + m.status.toLowerCase()">
+              <span class="marker-name">{{ m.name }}</span>
+
+              <div class="marker-value-cell">
+                <span class="marker-value">{{ m.value }}</span>
+                <span class="marker-unit">{{ m.unit }}</span>
+              </div>
+
+              <div class="ref-bar-cell">
+                <span class="ref-min">{{ m.refMin }}</span>
+                <div class="ref-track">
+                  <div
+                    class="ref-fill"
+                    [style.width.%]="getBarWidth(m)"
+                    [class]="'fill-' + m.status.toLowerCase()"
+                  ></div>
+                </div>
+                <span class="ref-max">{{ m.refMax }}</span>
+              </div>
+
+              <div class="trend-cell">
+                @if (m.trend === "UP") {
+                  <app-icon
+                    name="trending-up"
+                    [size]="14"
+                    color="var(--accent-green)"
+                  ></app-icon>
+                } @else if (m.trend === "DOWN") {
+                  <app-icon
+                    name="trending-down"
+                    [size]="14"
+                    color="var(--accent-red)"
+                  ></app-icon>
+                } @else {
+                  <app-icon
+                    name="minus"
+                    [size]="14"
+                    color="var(--text-muted)"
+                  ></app-icon>
+                }
+              </div>
+
+              <div class="status-cell">
+                @if (m.status === "NORMAL") {
+                  <span class="badge badge-green">Normál</span>
+                } @else if (m.status === "HIGH") {
+                  <span class="badge badge-amber">Magas</span>
+                } @else if (m.status === "LOW") {
+                  <span class="badge badge-amber">Alacsony</span>
+                } @else {
+                  <span class="badge badge-purple">Kritikus</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
     </div>
 
     <!-- Document status list -->
@@ -191,6 +205,11 @@
         </div>
 
         <div class="history-list">
+          @if (loadingDocuments) {
+            <p class="empty-docs">Dokumentumok betöltése...</p>
+          } @else if (loadingDocumentsError) {
+            <p class="empty-docs" style="color: var(--accent-red)">{{ loadingDocumentsError }}</p>
+          }
           @for (doc of documents; track doc.id) {
             <div
               class="report-row glass-panel"
@@ -244,7 +263,7 @@
                 }
               </div>
 
-              <!-- Status badge -->
+              <!-- Status badge / Retry -->
               @if (doc.status === "processing") {
                 <span class="badge badge-amber badge-processing"
                   >Feldolgozás alatt</span
@@ -252,7 +271,17 @@
               } @else if (doc.status === "done") {
                 <span class="badge badge-green">Kész</span>
               } @else {
-                <span class="badge badge-red">Hiba</span>
+                <div class="doc-error-actions">
+                  <span class="badge badge-red">Hiba</span>
+                  <button
+                    class="btn-retry"
+                    (click)="$event.stopPropagation(); retryAnalysis(doc.id)"
+                    title="Újraelemzés"
+                  >
+                    <app-icon name="refresh-cw" [size]="14"></app-icon>
+                    Újra
+                  </button>
+                </div>
               }
             </div>
           }

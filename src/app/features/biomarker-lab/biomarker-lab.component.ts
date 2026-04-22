@@ -1,16 +1,17 @@
-import { Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpEventType } from '@angular/common/http';
+import { Store } from '@ngrx/store';
+import { Subscription } from 'rxjs';
 import { KrIconComponent } from '@shared/components/kr-icon/kr-icon.component';
-
-interface BloodMarker {
-  name: string;
-  value: number;
-  unit: string;
-  ref_min: number;
-  ref_max: number;
-  status: 'normal' | 'low' | 'high' | 'critical';
-  trend: 'up' | 'down' | 'neutral';
-}
+import { ToastService } from '@shared/services/toast.service';
+import { DocumentsService } from '@core/services/documents.service';
+import {
+  DocumentResponse,
+  AnalysisMarker,
+} from '@core/api/models/document-response';
+import { selectAllAnalysisUpdates } from '../../store/analysis/analysis.selectors';
+import * as AnalysisActions from '../../store/analysis/analysis.actions';
 
 interface LabDocument {
   id: string;
@@ -22,6 +23,27 @@ interface LabDocument {
   errorMsg?: string;
 }
 
+function mapDoc(d: DocumentResponse): LabDocument {
+  return {
+    id: d.id,
+    filename: d.originalFilename,
+    uploadDate: new Date(d.uploadedAt).toLocaleDateString('hu-HU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }),
+    status:
+      d.status === 'COMPLETED'
+        ? 'done'
+        : d.status === 'FAILED'
+          ? 'error'
+          : 'processing',
+    markerCount: d.markerCount,
+    lab: d.labName,
+    errorMsg: d.errorMessage,
+  };
+}
+
 @Component({
   selector: 'app-biomarker-lab',
   standalone: true,
@@ -29,160 +51,129 @@ interface LabDocument {
   templateUrl: './biomarker-lab.component.html',
   styleUrls: ['./biomarker-lab.component.scss'],
 })
-export class BiomarkerLabComponent {
+export class BiomarkerLabComponent implements OnInit, OnDestroy {
   private router = inject(Router);
+  private store = inject(Store);
+  private toastService = inject(ToastService);
+  private documentsService = inject(DocumentsService);
   @ViewChild('fileInput') private fileInputRef!: ElementRef<HTMLInputElement>;
 
+  private analysisSub?: Subscription;
+  private uploadSub?: Subscription;
+
+  // ── Document list ──────────────────────────────
+  documents: LabDocument[] = [];
+  loadingDocuments = false;
+  loadingDocumentsError = '';
+
+  // ── Markers (most recent completed doc) ───────
+  markers: AnalysisMarker[] = [];
+  loadingMarkers = false;
+  mostRecentLab = '';
+  mostRecentDate = '';
+  mostRecentMarkerCount = 0;
+
+  // ── Upload state ──────────────────────────────
   isDragging = false;
   uploadState: 'idle' | 'uploading' | 'done' | 'error' = 'idle';
   uploadProgress = 0;
   uploadFileName = '';
   uploadErrorMsg = '';
-  private _uploadTimer?: ReturnType<typeof setInterval>;
 
-  markers: BloodMarker[] = [
-    {
-      name: 'Glükóz',
-      value: 5.2,
-      unit: 'mmol/L',
-      ref_min: 3.9,
-      ref_max: 6.1,
-      status: 'normal',
-      trend: 'neutral',
-    },
-    {
-      name: 'HbA1c',
-      value: 5.8,
-      unit: '%',
-      ref_min: 4.0,
-      ref_max: 5.6,
-      status: 'high',
-      trend: 'up',
-    },
-    {
-      name: 'LDL',
-      value: 3.1,
-      unit: 'mmol/L',
-      ref_min: 0,
-      ref_max: 3.4,
-      status: 'normal',
-      trend: 'down',
-    },
-    {
-      name: 'HDL',
-      value: 1.2,
-      unit: 'mmol/L',
-      ref_min: 1.0,
-      ref_max: 2.5,
-      status: 'normal',
-      trend: 'up',
-    },
-    {
-      name: 'Triglicerid',
-      value: 2.1,
-      unit: 'mmol/L',
-      ref_min: 0,
-      ref_max: 1.7,
-      status: 'high',
-      trend: 'up',
-    },
-    {
-      name: 'TSH',
-      value: 2.4,
-      unit: 'mIU/L',
-      ref_min: 0.4,
-      ref_max: 4.0,
-      status: 'normal',
-      trend: 'neutral',
-    },
-    {
-      name: 'Tesztoszteron',
-      value: 14.5,
-      unit: 'nmol/L',
-      ref_min: 9.9,
-      ref_max: 27.8,
-      status: 'normal',
-      trend: 'neutral',
-    },
-    {
-      name: 'Ferritin',
-      value: 42,
-      unit: 'ng/mL',
-      ref_min: 22,
-      ref_max: 322,
-      status: 'normal',
-      trend: 'neutral',
-    },
-    {
-      name: 'D-vitamin',
-      value: 28,
-      unit: 'ng/mL',
-      ref_min: 30,
-      ref_max: 100,
-      status: 'low',
-      trend: 'down',
-    },
-    {
-      name: 'B12',
-      value: 185,
-      unit: 'pg/mL',
-      ref_min: 180,
-      ref_max: 900,
-      status: 'normal',
-      trend: 'neutral',
-    },
-    {
-      name: 'hsCRP',
-      value: 0.4,
-      unit: 'mg/L',
-      ref_min: 0,
-      ref_max: 1.0,
-      status: 'normal',
-      trend: 'down',
-    },
-    {
-      name: 'GGT',
-      value: 65,
-      unit: 'U/L',
-      ref_min: 0,
-      ref_max: 55,
-      status: 'high',
-      trend: 'up',
-    },
-  ];
+  ngOnInit(): void {
+    this.loadDocuments();
+    this.subscribeToSseUpdates();
+  }
 
-  documents: LabDocument[] = [
-    {
-      id: 'DOC-004',
-      filename: 'lelet_2026_marc.pdf',
-      uploadDate: '2026. március 21.',
-      status: 'processing',
-    },
-    {
-      id: 'DOC-003',
-      filename: 'lelet_2026_feb.pdf',
-      uploadDate: '2026. február 12.',
-      status: 'done',
-      lab: 'Synlab Magyarország',
-      markerCount: 24,
-    },
-    {
-      id: 'DOC-002',
-      filename: 'lelet_2025_nov.pdf',
-      uploadDate: '2025. november 3.',
-      status: 'done',
-      lab: 'Medicover Lab',
-      markerCount: 18,
-    },
-    {
-      id: 'DOC-001',
-      filename: 'scan_2025_aug.pdf',
-      uploadDate: '2025. augusztus 8.',
-      status: 'error',
-      errorMsg: 'A PDF nem olvasható, kérjük tölts fel jobb minőségű fájlt.',
-    },
-  ];
+  ngOnDestroy(): void {
+    this.analysisSub?.unsubscribe();
+    this.uploadSub?.unsubscribe();
+  }
 
+  // ── Load documents ─────────────────────────────
+  loadDocuments(): void {
+    this.loadingDocuments = true;
+    this.loadingDocumentsError = '';
+    this.documentsService.getDocuments().subscribe({
+      next: (docs) => {
+        this.loadingDocuments = false;
+        this.documents = docs.map(mapDoc);
+        this.loadMarkersFromMostRecent(docs);
+      },
+      error: (err) => {
+        this.loadingDocuments = false;
+        this.loadingDocumentsError =
+          err.error?.message ?? 'A dokumentumok betöltése sikertelen.';
+      },
+    });
+  }
+
+  private loadMarkersFromMostRecent(docs: DocumentResponse[]): void {
+    const recent = docs
+      .filter((d) => d.status === 'COMPLETED')
+      .sort(
+        (a, b) =>
+          new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime(),
+      )[0];
+
+    if (!recent) return;
+
+    this.loadingMarkers = true;
+    this.documentsService.getAnalysis(recent.id).subscribe({
+      next: (analysis) => {
+        this.loadingMarkers = false;
+        this.markers = analysis.markers;
+        this.mostRecentLab = analysis.labName ?? '';
+        this.mostRecentDate = new Date(analysis.analyzedAt).toLocaleDateString(
+          'hu-HU',
+          { year: 'numeric', month: 'long', day: 'numeric' },
+        );
+        this.mostRecentMarkerCount = analysis.markerCount;
+      },
+      error: () => {
+        this.loadingMarkers = false;
+      },
+    });
+  }
+
+  // ── SSE updates ────────────────────────────────
+  private subscribeToSseUpdates(): void {
+    this.analysisSub = this.store
+      .select(selectAllAnalysisUpdates)
+      .subscribe((updates) => {
+        Object.values(updates).forEach((event) => {
+          const doc = this.documents.find((d) => d.id === event.documentId);
+          if (!doc) return;
+
+          if (event.status === 'COMPLETED') {
+            if (doc.status !== 'done') {
+              doc.status = 'done';
+              this.toastService.show(
+                `AI elemzés kész: ${doc.filename}`,
+                'success',
+              );
+              // Reload document list and markers to get real data from backend
+              this.loadDocuments();
+            }
+          } else if (event.status === 'FAILED') {
+            if (doc.status !== 'error') {
+              doc.status = 'error';
+              doc.errorMsg = event.errorMessage ?? 'Az elemzés sikertelen.';
+              this.toastService.show(
+                `Elemzési hiba: ${doc.filename}`,
+                'error',
+                {
+                  label: 'Újra',
+                  callback: () => this.retryAnalysis(doc.id),
+                },
+              );
+            }
+          }
+        });
+      });
+  }
+
+  // ── Upload ─────────────────────────────────────
   onDragOver(e: DragEvent): void {
     e.preventDefault();
     this.isDragging = true;
@@ -223,21 +214,32 @@ export class BiomarkerLabComponent {
       this.uploadErrorMsg = 'A fájl mérete meghaladja a 10 MB-ot!';
       return;
     }
+
     this.uploadFileName = file.name;
     this.uploadErrorMsg = '';
     this.uploadProgress = 0;
     this.uploadState = 'uploading';
-    clearInterval(this._uploadTimer);
-    this._uploadTimer = setInterval(() => {
-      this.uploadProgress = Math.min(
-        this.uploadProgress + Math.round(Math.random() * 15 + 5),
-        100,
-      );
-      if (this.uploadProgress >= 100) {
-        this.uploadState = 'done';
-        clearInterval(this._uploadTimer);
-      }
-    }, 200);
+    this.uploadSub?.unsubscribe();
+
+    this.uploadSub = this.documentsService.uploadDocument(file).subscribe({
+      next: (httpEvent) => {
+        if (httpEvent.type === HttpEventType.UploadProgress) {
+          const total = httpEvent.total ?? 1;
+          this.uploadProgress = Math.round((httpEvent.loaded / total) * 100);
+        } else if (httpEvent.type === HttpEventType.Response) {
+          this.uploadProgress = 100;
+          this.uploadState = 'done';
+          if (httpEvent.body) {
+            this.documents = [mapDoc(httpEvent.body), ...this.documents];
+          }
+        }
+      },
+      error: (err) => {
+        this.uploadState = 'error';
+        this.uploadErrorMsg =
+          err.error?.message ?? 'A feltöltés sikertelen. Próbáld újra.';
+      },
+    });
   }
 
   openReview(doc: LabDocument): void {
@@ -246,17 +248,29 @@ export class BiomarkerLabComponent {
   }
 
   resetUpload(): void {
-    clearInterval(this._uploadTimer);
+    this.uploadSub?.unsubscribe();
     this.uploadState = 'idle';
     this.uploadProgress = 0;
     this.uploadFileName = '';
     this.uploadErrorMsg = '';
   }
 
-  getBarWidth(m: BloodMarker): number {
-    const range = m.ref_max - m.ref_min;
+  retryAnalysis(documentId: string): void {
+    const doc = this.documents.find((d) => d.id === documentId);
+    if (doc) {
+      doc.status = 'processing';
+      doc.errorMsg = undefined;
+    }
+    this.store.dispatch(AnalysisActions.retryAnalysis({ documentId }));
+  }
+
+  getBarWidth(m: AnalysisMarker): number {
+    const range = m.refMax - m.refMin;
     if (range <= 0) return 50;
-    const pct = ((m.value - m.ref_min) / range) * 100;
+    const pct = ((m.value - m.refMin) / range) * 100;
     return Math.min(Math.max(pct, 0), 100);
   }
 }
+
+
+

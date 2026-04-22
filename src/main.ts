@@ -11,6 +11,7 @@ import { appRoutes } from './app/app.routes';
 import { appStore } from './app/store';
 import { AuthEffects } from './app/store/auth/auth.effects';
 import { UserEffects } from './app/store/user/user.effects';
+import { AnalysisEffects } from './app/store/analysis/analysis.effects';
 import { authInterceptor } from './app/core/interceptors/auth.interceptor';
 import { environment } from './environments/environment';
 
@@ -19,7 +20,7 @@ const providers = [
   provideHttpClient(withInterceptors([authInterceptor])),
   provideRouter(appRoutes),
   provideStore(appStore),
-  provideEffects(AuthEffects, UserEffects),
+  provideEffects(AuthEffects, UserEffects, AnalysisEffects),
   provideStoreDevtools({
     maxAge: 25,
     logOnly: environment.production,

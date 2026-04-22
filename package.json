@@ -21,6 +21,7 @@
     "@angular/platform-browser": "^18.0.0",
     "@angular/platform-browser-dynamic": "^18.0.0",
     "@angular/router": "^18.0.0",
+    "@microsoft/fetch-event-source": "^2.0.1",
     "@ngrx/effects": "^18.0.0",
     "@ngrx/entity": "^18.0.0",
     "@ngrx/router-store": "^18.0.0",
