@@ -133,47 +133,21 @@
             <span>Státusz</span>
           </div>
 
-          @for (m of markers; track m.name) {
+          @for (m of markers; track m.testName) {
             <div class="table-row" [class]="'status-' + m.status.toLowerCase()">
-              <span class="marker-name">{{ m.name }}</span>
+              <span class="marker-name">{{ m.testName }}</span>
 
               <div class="marker-value-cell">
                 <span class="marker-value">{{ m.value }}</span>
-                <span class="marker-unit">{{ m.unit }}</span>
+                <span class="marker-unit">{{ m.unit ?? '' }}</span>
               </div>
 
               <div class="ref-bar-cell">
-                <span class="ref-min">{{ m.refMin }}</span>
-                <div class="ref-track">
-                  <div
-                    class="ref-fill"
-                    [style.width.%]="getBarWidth(m)"
-                    [class]="'fill-' + m.status.toLowerCase()"
-                  ></div>
-                </div>
-                <span class="ref-max">{{ m.refMax }}</span>
+                <span class="ref-range">{{ m.referenceRange ?? '—' }}</span>
               </div>
 
               <div class="trend-cell">
-                @if (m.trend === "UP") {
-                  <app-icon
-                    name="trending-up"
-                    [size]="14"
-                    color="var(--accent-green)"
-                  ></app-icon>
-                } @else if (m.trend === "DOWN") {
-                  <app-icon
-                    name="trending-down"
-                    [size]="14"
-                    color="var(--accent-red)"
-                  ></app-icon>
-                } @else {
-                  <app-icon
-                    name="minus"
-                    [size]="14"
-                    color="var(--text-muted)"
-                  ></app-icon>
-                }
+                <app-icon name="minus" [size]="14" color="var(--text-muted)"></app-icon>
               </div>
 
               <div class="status-cell">
@@ -184,7 +158,7 @@
                 } @else if (m.status === "LOW") {
                   <span class="badge badge-amber">Alacsony</span>
                 } @else {
-                  <span class="badge badge-purple">Kritikus</span>
+                  <span class="badge badge-purple">Ismeretlen</span>
                 }
               </div>
             </div>
@@ -253,10 +227,8 @@
                   <span class="report-lab">{{ doc.filename }}</span>
                   <div class="skeleton-line"></div>
                 } @else if (doc.status === "done") {
-                  <span class="report-lab">{{ doc.lab }}</span>
-                  <span class="report-date"
-                    >{{ doc.uploadDate }} · {{ doc.markerCount }} marker</span
-                  >
+                  <span class="report-lab">{{ doc.filename }}</span>
+                  <span class="report-date">{{ doc.issuedDate ?? doc.uploadDate }}</span>
                 } @else {
                   <span class="report-lab">{{ doc.filename }}</span>
                   <span class="report-date error-msg">{{ doc.errorMsg }}</span>

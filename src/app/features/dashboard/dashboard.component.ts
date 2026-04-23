@@ -149,7 +149,7 @@ export class DashboardComponent {
     { day: 'Sz', sleep: 6.8, hrv: 55, steps: 11000 },
     { day: 'Cs', sleep: 8.0, hrv: 62, steps: 8400 },
     { day: 'P', sleep: 7.4, hrv: 60, steps: 7100 },
-    { day: 'Sz', sleep: 9.1, hrv: 71, steps: 4300 },
+    { day: 'Szo', sleep: 9.1, hrv: 71, steps: 4300 },
     { day: 'V', sleep: 8.3, hrv: 68, steps: 5600 },
   ];
 

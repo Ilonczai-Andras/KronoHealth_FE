@@ -2,13 +2,13 @@ import { Component, ElementRef, ViewChild, inject, OnInit, OnDestroy } from '@an
 import { Router } from '@angular/router';
 import { HttpEventType } from '@angular/common/http';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { KrIconComponent } from '@shared/components/kr-icon/kr-icon.component';
 import { ToastService } from '@shared/services/toast.service';
 import { DocumentsService } from '@core/services/documents.service';
 import {
-  DocumentResponse,
-  AnalysisMarker,
+  LabResult,
 } from '@core/api/models/document-response';
 import { selectAllAnalysisUpdates } from '../../store/analysis/analysis.selectors';
 import * as AnalysisActions from '../../store/analysis/analysis.actions';
@@ -17,31 +17,9 @@ interface LabDocument {
   id: string;
   filename: string;
   uploadDate: string;
+  issuedDate: string | null;
   status: 'processing' | 'done' | 'error';
-  markerCount?: number;
-  lab?: string;
   errorMsg?: string;
-}
-
-function mapDoc(d: DocumentResponse): LabDocument {
-  return {
-    id: d.id,
-    filename: d.originalFilename,
-    uploadDate: new Date(d.uploadedAt).toLocaleDateString('hu-HU', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }),
-    status:
-      d.status === 'COMPLETED'
-        ? 'done'
-        : d.status === 'FAILED'
-          ? 'error'
-          : 'processing',
-    markerCount: d.markerCount,
-    lab: d.labName,
-    errorMsg: d.errorMessage,
-  };
 }
 
 @Component({
@@ -67,7 +45,7 @@ export class BiomarkerLabComponent implements OnInit, OnDestroy {
   loadingDocumentsError = '';
 
   // ── Markers (most recent completed doc) ───────
-  markers: AnalysisMarker[] = [];
+  markers: LabResult[] = [];
   loadingMarkers = false;
   mostRecentLab = '';
   mostRecentDate = '';
@@ -97,41 +75,70 @@ export class BiomarkerLabComponent implements OnInit, OnDestroy {
     this.documentsService.getDocuments().subscribe({
       next: (docs) => {
         this.loadingDocuments = false;
-        this.documents = docs.map(mapDoc);
-        this.loadMarkersFromMostRecent(docs);
+        if (docs.length === 0) {
+          this.documents = [];
+          return;
+        }
+        this.loadingMarkers = true;
+        forkJoin(
+          docs.map((d) =>
+            this.documentsService
+              .getAnalysis(d.id)
+              .pipe(catchError(() => of(null))),
+          ),
+        ).subscribe((analyses) => {
+          const pairs = docs.map((d, i) => ({ doc: d, analysis: analyses[i] }));
+
+          // Sort by analyzedAt desc, fall back to uploadedAt for unanalyzed docs
+          pairs.sort((a, b) => {
+            const da = a.analysis?.analyzedAt ?? a.doc.uploadedAt;
+            const db = b.analysis?.analyzedAt ?? b.doc.uploadedAt;
+            return new Date(db).getTime() - new Date(da).getTime();
+          });
+
+          this.documents = pairs.map(({ doc, analysis }) => ({
+            id: doc.id,
+            filename: doc.fileName,
+            uploadDate: new Date(doc.uploadedAt).toLocaleDateString('hu-HU', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            }),
+            issuedDate: analysis?.result?.issuedDate ?? null,
+            status: !analysis
+              ? ('processing' as const)
+              : analysis.status === 'COMPLETED'
+                ? ('done' as const)
+                : analysis.status === 'FAILED'
+                  ? ('error' as const)
+                  : ('processing' as const),
+            errorMsg: analysis?.errorMessage ?? undefined,
+          }));
+
+          // Load markers from the most recently analyzed completed doc
+          const firstCompleted = pairs.find(
+            (p) => p.analysis?.status === 'COMPLETED',
+          );
+          if (firstCompleted?.analysis) {
+            const a = firstCompleted.analysis;
+            this.markers = a.result?.labResults ?? [];
+            this.mostRecentLab = a.result?.facilityName ?? '';
+            this.mostRecentDate = new Date(
+              a.analyzedAt ?? a.createdAt,
+            ).toLocaleDateString('hu-HU', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            });
+            this.mostRecentMarkerCount = this.markers.length;
+          }
+          this.loadingMarkers = false;
+        });
       },
       error: (err) => {
         this.loadingDocuments = false;
         this.loadingDocumentsError =
           err.error?.message ?? 'A dokumentumok betöltése sikertelen.';
-      },
-    });
-  }
-
-  private loadMarkersFromMostRecent(docs: DocumentResponse[]): void {
-    const recent = docs
-      .filter((d) => d.status === 'COMPLETED')
-      .sort(
-        (a, b) =>
-          new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime(),
-      )[0];
-
-    if (!recent) return;
-
-    this.loadingMarkers = true;
-    this.documentsService.getAnalysis(recent.id).subscribe({
-      next: (analysis) => {
-        this.loadingMarkers = false;
-        this.markers = analysis.markers;
-        this.mostRecentLab = analysis.labName ?? '';
-        this.mostRecentDate = new Date(analysis.analyzedAt).toLocaleDateString(
-          'hu-HU',
-          { year: 'numeric', month: 'long', day: 'numeric' },
-        );
-        this.mostRecentMarkerCount = analysis.markerCount;
-      },
-      error: () => {
-        this.loadingMarkers = false;
       },
     });
   }
@@ -149,10 +156,9 @@ export class BiomarkerLabComponent implements OnInit, OnDestroy {
             if (doc.status !== 'done') {
               doc.status = 'done';
               this.toastService.show(
-                `AI elemzés kész: ${doc.filename}`,
+                `AI elemzés kész: ${doc.filename ?? 'ismeretlen fájl'}`,
                 'success',
               );
-              // Reload document list and markers to get real data from backend
               this.loadDocuments();
             }
           } else if (event.status === 'FAILED') {
@@ -160,7 +166,7 @@ export class BiomarkerLabComponent implements OnInit, OnDestroy {
               doc.status = 'error';
               doc.errorMsg = event.errorMessage ?? 'Az elemzés sikertelen.';
               this.toastService.show(
-                `Elemzési hiba: ${doc.filename}`,
+                `Elemzési hiba: ${doc.filename ?? 'ismeretlen fájl'}`,
                 'error',
                 {
                   label: 'Újra',
@@ -230,7 +236,19 @@ export class BiomarkerLabComponent implements OnInit, OnDestroy {
           this.uploadProgress = 100;
           this.uploadState = 'done';
           if (httpEvent.body) {
-            this.documents = [mapDoc(httpEvent.body), ...this.documents];
+            const d = httpEvent.body;
+            const newDoc: LabDocument = {
+              id: d.id,
+              filename: d.fileName,
+              uploadDate: new Date(d.uploadedAt).toLocaleDateString('hu-HU', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              }),
+              issuedDate: null,
+              status: 'processing',
+            };
+            this.documents = [newDoc, ...this.documents];
           }
         }
       },
@@ -263,14 +281,4 @@ export class BiomarkerLabComponent implements OnInit, OnDestroy {
     }
     this.store.dispatch(AnalysisActions.retryAnalysis({ documentId }));
   }
-
-  getBarWidth(m: AnalysisMarker): number {
-    const range = m.refMax - m.refMin;
-    if (range <= 0) return 50;
-    const pct = ((m.value - m.refMin) / range) * 100;
-    return Math.min(Math.max(pct, 0), 100);
-  }
 }
-
-
-

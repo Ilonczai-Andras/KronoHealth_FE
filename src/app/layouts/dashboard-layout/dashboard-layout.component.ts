@@ -21,12 +21,15 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const storedToken = localStorage.getItem('kh_token');
-    if (storedToken && !this.sseService.isConnected) {
-      this.sseService.connect(storedToken);
+    if (storedToken) {
+      this.sseService.connect(storedToken); // idempotent if already open
     }
   }
 
   ngOnDestroy(): void {
+    if (!localStorage.getItem('kh_token')) {
+      this.sseService.disconnect();
+    }
   }
 
   @HostListener('document:visibilitychange')
@@ -36,10 +39,13 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
         .select(selectToken)
         .pipe(take(1))
         .subscribe((token) => {
-          if (token) {
-            this.sseService.reconnectIfNeeded();
-          }
+          if (token) this.sseService.reconnectIfNeeded();
         });
     }
+  }
+
+  @HostListener('window:pagehide')
+  onPageHide(): void {
+    this.sseService.disconnect();
   }
 }
